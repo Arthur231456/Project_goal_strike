@@ -11,12 +11,14 @@ NORTH = 1
 WEST = 2
 SOUTH = 3
 
+BAR_HEIGHT = 30
 TILE_SIZE = 30
 W = 1600
 H = 900
 
 MAPS_DIR = "MAPS"
 DATA_DIR = "source"
+PATTERNS_DIR = "patterns"
 
 music_channel = 0
 bshot_channel = 1
@@ -25,9 +27,6 @@ MUSIC_VOLUME = 1.0
 SHOT_VOLUME = 0.7
 
 SETHEALTHEVENT = pygame.USEREVENT + 1
-block1 = pygame.image.load(f"{DATA_DIR}/block1.jpg")
-heard_f = pygame.image.load(f"{DATA_DIR}/life1.jpg")
-heard_s = pygame.image.load(f"{DATA_DIR}/life2.jpg")
 all_sprites = pygame.sprite.Group()
 players = pygame.sprite.Group()
 bullets = pygame.sprite.Group()
@@ -45,14 +44,14 @@ def load_image(name, colorkey=None):
 
 # класс игрока
 class Player(pygame.sprite.Sprite):
-    red0 = load_image(f"{DATA_DIR}/image02.jpg")
-    red1 = load_image(f"{DATA_DIR}/image12.jpg")
-    red2 = load_image(f"{DATA_DIR}/image22.jpg")
-    red3 = load_image(f"{DATA_DIR}/image32.jpg")
-    blue0 = load_image(f"{DATA_DIR}/image01.jpg")
-    blue1 = load_image(f"{DATA_DIR}/image11.jpg")
-    blue2 = load_image(f"{DATA_DIR}/image21.jpg")
-    blue3 = load_image(f"{DATA_DIR}/image31.jpg")
+    red0 = load_image(f"{DATA_DIR}/{PATTERNS_DIR}/image02.jpg")
+    red1 = load_image(f"{DATA_DIR}/{PATTERNS_DIR}/image12.jpg")
+    red2 = load_image(f"{DATA_DIR}/{PATTERNS_DIR}/image22.jpg")
+    red3 = load_image(f"{DATA_DIR}/{PATTERNS_DIR}/image32.jpg")
+    blue0 = load_image(f"{DATA_DIR}/{PATTERNS_DIR}/image01.jpg")
+    blue1 = load_image(f"{DATA_DIR}/{PATTERNS_DIR}/image11.jpg")
+    blue2 = load_image(f"{DATA_DIR}/{PATTERNS_DIR}/image21.jpg")
+    blue3 = load_image(f"{DATA_DIR}/{PATTERNS_DIR}/image31.jpg")
 
     def __init__(self, color):
         super().__init__(all_sprites, players)
@@ -163,6 +162,18 @@ class Field:
                     sprite = pygame.sprite.Sprite(map_objects)
                     sprite.image = pygame.Surface((TILE_SIZE, TILE_SIZE))
                     sprite.rect = pygame.Rect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE)
+        left_board = pygame.sprite.Sprite(map_objects)
+        left_board.image = pygame.Surface((1, 1))
+        left_board.rect = pygame.Rect(1, 1, 1, self.height * TILE_SIZE)
+        right_board = pygame.sprite.Sprite(map_objects)
+        right_board.image = pygame.Surface((TILE_SIZE, TILE_SIZE))
+        right_board.rect = pygame.Rect(self.width * TILE_SIZE - 1, 1, 1, self.height * TILE_SIZE)
+        top_board = pygame.sprite.Sprite(map_objects)
+        top_board.image = pygame.Surface((TILE_SIZE, TILE_SIZE))
+        top_board.rect = pygame.Rect(1, BAR_HEIGHT - 5, self.width * TILE_SIZE, 1)
+        bottom_board = pygame.sprite.Sprite(map_objects)
+        bottom_board.image = pygame.Surface((TILE_SIZE, TILE_SIZE))
+        bottom_board.rect = pygame.Rect(1, self.height * TILE_SIZE - 1, self.width * TILE_SIZE, 1)
 
     def render(self, display):
         for x in range(self.width):
@@ -172,15 +183,15 @@ class Field:
 
     def set_health(self, cords=None):
         health = pygame.sprite.Sprite(health_box, all_sprites)
-        health.image = load_image(f"{DATA_DIR}/health1.jpg")
+        health.image = load_image(f"{DATA_DIR}/{PATTERNS_DIR}/health1.jpg")
         if cords is not None:
             health.rect = health.image.get_rect().move(cords[0] * TILE_SIZE, cords[1] * TILE_SIZE)
         else:
             health.rect = health.image.get_rect().move(c(range(10, self.width - 10)) * TILE_SIZE,
-                                                       c(range(self.height)) * TILE_SIZE)
+                                                       c(range(2, self.height)) * TILE_SIZE)
             while pygame.sprite.spritecollideany(health, map_objects):
                 health.rect = health.image.get_rect().move(c(range(10, self.width - 10)) * TILE_SIZE,
-                                                           c(range(self.height)) * TILE_SIZE)
+                                                           c(range(2, self.height)) * TILE_SIZE)
 
 
 def terminate():
