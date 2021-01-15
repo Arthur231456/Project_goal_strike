@@ -89,6 +89,7 @@ class Player(pygame.sprite.Sprite):
     def shot(self, mixer):
         snd = pygame.mixer.Sound(f"{DATA_DIR}/sounds/shot.wav")
         snd.set_volume(SHOT_VOLUME)
+        Bullet(self.rect.x, self.rect.y, self.orient)
         if self.color == "blue":
             mixer.Channel(bshot_channel).play(snd)
         else:
@@ -97,8 +98,50 @@ class Player(pygame.sprite.Sprite):
 
 # класс пуль
 class Bullet(pygame.sprite.Sprite):
-    def __init__(self):
-        pass
+    def __init__(self, x, y, orient):
+        super().__init__(bullets, all_sprites)
+        self.orient = orient
+        dx = 0
+        dy = 0
+        self.vect = (0, 0)
+        if orient == WEST:
+            dx = -10
+            dy = 15
+            self.vect = (-15, 0)
+            self.image = pygame.Surface((5, 2))
+        elif orient == NORTH:
+            dx = 15
+            dy = -10
+            self.vect = (0, -15)
+            self.image = pygame.Surface((2, 5))
+        elif orient == EAST:
+            dx = 35
+            dy = 15
+            self.vect = (15, 0)
+            self.image = pygame.Surface((5, 2))
+        elif orient == SOUTH:
+            dx = 15
+            dy = 35
+            self.vect = (0, 15)
+            self.image = pygame.Surface((2, 5))
+        self.image.fill((181, 166, 66))
+        self.rect = self.image.get_rect().move(x + dx, y + dy)
+
+    def update(self):
+        p = pygame.sprite.spritecollideany(self, players)
+        w = pygame.sprite.spritecollideany(self, map_objects)
+        if w:
+            bullets.remove(self)
+            all_sprites.remove(self)
+            del self
+        elif p:
+            p.health -= 1
+            bullets.remove(self)
+            all_sprites.remove(self)
+            del self
+        else:
+            self.rect.x += self.vect[0]
+            self.rect.y += self.vect[1]
 
 
 # класс поля битвы
@@ -188,7 +231,7 @@ def main():
                     move_list.append((1, 0, EAST, event.key))
             elif event.type == SETHEALTHEVENT:
                 field.set_health()
-            elif event.type == pygame.KEYUP:
+            elif event.type == pygame.KEYUP and event.key not in [pygame.K_g, pygame.K_p]:
                 move_list = list(filter(lambda x: x[-1] != event.key, move_list))
         for i in move_list:
             if i[3] in [pygame.K_w, pygame.K_d, pygame.K_a, pygame.K_s]:
