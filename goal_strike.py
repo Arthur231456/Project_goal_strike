@@ -19,16 +19,22 @@ H = 900
 MAPS_DIR = "MAPS"
 DATA_DIR = "source"
 PATTERNS_DIR = "patterns"
+MAPS = {1: "map2", 2: "map"}
+
+with open(f"{DATA_DIR}/{MAPS_DIR}/PLACES.txt") as t:
+    PLACES = list(set(eval(f"{t.read()}")))
 
 music_channel = 0
 bshot_channel = 1
 rshot_channel = 2
 bullet_channel = 3
 health_channel = 4
-MUSIC_VOLUME = 1.0
+capture_channel = 5
+MUSIC_VOLUME = 0.7
 SHOT_VOLUME = 0.7
 BULLET_VOLUME = 0.3
 HEALTH_VOLUME = 0.6
+CAPTURE_VOLUME = 0.3
 
 SETHEALTHEVENT = pygame.USEREVENT + 1
 all_sprites = pygame.sprite.Group()
@@ -36,6 +42,7 @@ players = pygame.sprite.Group()
 bullets = pygame.sprite.Group()
 map_objects = pygame.sprite.Group()
 health_box = pygame.sprite.Group()
+capture_points = pygame.sprite.Group()
 
 
 def load_image(name, colorkey=None):
@@ -57,7 +64,7 @@ class Player(pygame.sprite.Sprite):
     blue2 = load_image(f"{DATA_DIR}/{PATTERNS_DIR}/image21.png")
     blue3 = load_image(f"{DATA_DIR}/{PATTERNS_DIR}/image31.png")
 
-    def __init__(self, color, mixer):
+    def __init__(self, color, mixer, cord):
         super().__init__(all_sprites, players)
         self.orient = 0
         self.health = 5
@@ -67,12 +74,10 @@ class Player(pygame.sprite.Sprite):
         if color == "blue":
             self.orient = 2
             self.image = eval(f"self.{color}{self.orient}")
-            self.rect = self.image.get_rect().move(TILE_SIZE,
-                                                   TILE_SIZE * 15)
+            self.rect = self.image.get_rect().move(*cord)
 
         else:
-            self.rect = self.image.get_rect().move(TILE_SIZE * 52,
-                                                   TILE_SIZE * 15)
+            self.rect = self.image.get_rect().move(*cord)
 
     def move(self, x, y, orient):
         if self.orient == orient:
@@ -91,7 +96,12 @@ class Player(pygame.sprite.Sprite):
             self.mixer.Channel(health_channel).play(snd)
             health_box.remove(a)
             all_sprites.remove(a)
-            self.health += 1
+            if self.health < 10:
+                self.health += 1
+        try:
+            pygame.sprite.spritecollideany(self, capture_points).change_color(self.color)
+        except:
+            pass
 
     def shot(self):
         snd = pygame.mixer.Sound(f"{DATA_DIR}/sounds/shot.wav")
@@ -166,9 +176,10 @@ class Bullet(pygame.sprite.Sprite):
 class Field:
     def __init__(self, map_name):
         super().__init__()
+        self.name = map_name
         self.map = pytmx.load_pygame(f"{DATA_DIR}/{MAPS_DIR}/{map_name}.tmx")
         with open(f"{DATA_DIR}/{MAPS_DIR}/{map_name}_floor.txt") as t:
-            self.floor = int(t.read())
+            self.floor = eval(t.read())
         self.height = self.map.height
         self.width = self.map.width
         self.set_health((26, 13))
@@ -177,13 +188,13 @@ class Field:
         self.set_health((26, 17))
         for x in range(self.width):
             for y in range(1, self.height):
-                if self.map.get_tile_gid(x, y, 0) != self.floor:
+                if self.map.get_tile_gid(x, y, 0) not in self.floor:
                     sprite = pygame.sprite.Sprite(map_objects)
                     sprite.image = pygame.Surface((TILE_SIZE, TILE_SIZE))
                     sprite.rect = pygame.Rect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE)
         left_board = pygame.sprite.Sprite(map_objects)
         left_board.image = pygame.Surface((1, 1))
-        left_board.rect = pygame.Rect(1, 1, 1, self.height * TILE_SIZE)
+        left_board.rect = pygame.Rect(-5, 1, 1, self.height * TILE_SIZE)
         right_board = pygame.sprite.Sprite(map_objects)
         right_board.image = pygame.Surface((TILE_SIZE, TILE_SIZE))
         right_board.rect = pygame.Rect(self.width * TILE_SIZE - 1, 1, 1, self.height * TILE_SIZE)
@@ -205,12 +216,13 @@ class Field:
     def set_health(self, cords=None):
         health = pygame.sprite.Sprite(health_box, all_sprites)
         health.image = load_image(f"{DATA_DIR}/{PATTERNS_DIR}/health2.jpg")
-        if cords is not None:
+        if cords is not None and self.name != "map2":
             health.rect = health.image.get_rect().move(cords[0] * TILE_SIZE + 1, cords[1] * TILE_SIZE + 1)
         else:
             health.rect = health.image.get_rect().move(c(range(10, self.width - 10)) * TILE_SIZE + 1,
                                                        c(range(2, self.height)) * TILE_SIZE + 1)
-            while pygame.sprite.spritecollideany(health, map_objects):
+            while pygame.sprite.spritecollideany(health, map_objects)\
+                    or pygame.sprite.spritecollideany(health, capture_points):
                 health.rect = health.image.get_rect().move(c(range(10, self.width - 10)) * TILE_SIZE + 1,
                                                            c(range(2, self.height)) * TILE_SIZE + 1)
 
@@ -221,18 +233,27 @@ def terminate():
 
 
 # запуск игрового процесса
-def main():
+def main(map):
     pygame.init()
     pygame.time.set_timer(SETHEALTHEVENT, 20000)
     clock = pygame.time.Clock()
     display = pygame.display.set_mode((W, H), pygame.FULLSCREEN | pygame.DOUBLEBUF)
     mixer = pygame.mixer
-    b = Player("blue", mixer)
-    r = Player("red", mixer)
-    field = Field("map")
+
+    field = Field(MAPS[map])
+    if map == 1:
+        for cord in PLACES:
+            CapturePoints(cord[0], cord[1], mixer)
+        b = Player("blue", mixer, (TILE_SIZE * 1, TILE_SIZE * 2))
+        r = Player("red", mixer, (W - TILE_SIZE * 2, H - TILE_SIZE * 2))
+
+    else:
+        b = Player("blue", mixer, (TILE_SIZE, TILE_SIZE * 15))
+        r = Player("red", mixer, (TILE_SIZE * 52, TILE_SIZE * 15))
     snd = pygame.mixer.Sound(f"{DATA_DIR}/sounds/music.wav")
     snd.set_volume(MUSIC_VOLUME)
     mixer.Channel(music_channel).play(snd)
+
     move_list = []
     bar = Top_bar((W, BAR_HEIGHT))
     bar.set_health(b, r)
@@ -276,6 +297,16 @@ def main():
         display.fill((0, 0, 0))
         map_objects.draw(display)
         field.render(display)
+        if b.health == 0 and map == 1:
+            players.remove(b)
+            all_sprites.remove(b)
+            b = Player("blue", mixer, (TILE_SIZE * 1, TILE_SIZE * 2))
+            bar.set_health(b, r)
+        elif r.health == 0 and map == 1:
+            players.remove(r)
+            all_sprites.remove(r)
+            r = Player("red", mixer, (W - TILE_SIZE * 2, H - TILE_SIZE * 2))
+            bar.set_health(b, r)
         all_sprites.update()
         all_sprites.draw(display)
         bar.update()
@@ -305,8 +336,30 @@ class Top_bar(pygame.Surface):
                     self.blit(img, (W - TILE_SIZE * j - 5 * j - TILE_SIZE, BAR_HEIGHT // 2 - TILE_SIZE // 2))
 
     def set_health(self, *player):
+        self.health = []
         for i in range(len(player)):
             self.health.append(player[i])
+
+
+class CapturePoints(pygame.sprite.Sprite):
+    img = load_image(f"{DATA_DIR}/{PATTERNS_DIR}/free_place.jpg")
+    red = load_image(f"{DATA_DIR}/{PATTERNS_DIR}/place2.jpg")
+    blue = load_image(f"{DATA_DIR}/{PATTERNS_DIR}/place1.jpg")
+
+    def __init__(self, x, y, mixer):
+        super().__init__(capture_points, all_sprites)
+        self.color = None
+        self.image = CapturePoints.img
+        self.mixer = mixer
+        self.rect = self.image.get_rect().move((x * TILE_SIZE + 1, y * TILE_SIZE + 1))
+
+    def change_color(self, color):
+        if self.color != color:
+            snd = pygame.mixer.Sound(f"{DATA_DIR}/sounds/capture_snd.wav")
+            snd.set_volume(CAPTURE_VOLUME)
+            self.mixer.Channel(capture_channel).play(snd)
+        self.color = color
+        self.image = eval(f"CapturePoints.{color}")
 
 
 # начальный экран
@@ -322,4 +375,4 @@ def paused():
 
 if __name__ == "__main__":
     pygame.mixer.init()
-    main()
+    main(1)
