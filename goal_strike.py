@@ -24,9 +24,11 @@ music_channel = 0
 bshot_channel = 1
 rshot_channel = 2
 bullet_channel = 3
+health_channel = 4
 MUSIC_VOLUME = 1.0
 SHOT_VOLUME = 0.7
 BULLET_VOLUME = 0.3
+HEALTH_VOLUME = 0.6
 
 SETHEALTHEVENT = pygame.USEREVENT + 1
 all_sprites = pygame.sprite.Group()
@@ -38,22 +40,22 @@ health_box = pygame.sprite.Group()
 
 def load_image(name, colorkey=None):
     image = pygame.image.load(name)
-    # image = image.convert()
     if colorkey == -1:
-        image.set_colorkey(image.get_at((0, 0)))
+        image = image.convert()
+        image.set_colorkey(image.get_at((0, 28)))
     return image
 
 
 # класс игрока
 class Player(pygame.sprite.Sprite):
-    red0 = load_image(f"{DATA_DIR}/{PATTERNS_DIR}/image02.jpg")
-    red1 = load_image(f"{DATA_DIR}/{PATTERNS_DIR}/image12.jpg")
-    red2 = load_image(f"{DATA_DIR}/{PATTERNS_DIR}/image22.jpg")
-    red3 = load_image(f"{DATA_DIR}/{PATTERNS_DIR}/image32.jpg")
-    blue0 = load_image(f"{DATA_DIR}/{PATTERNS_DIR}/image01.jpg")
-    blue1 = load_image(f"{DATA_DIR}/{PATTERNS_DIR}/image11.jpg")
-    blue2 = load_image(f"{DATA_DIR}/{PATTERNS_DIR}/image21.jpg")
-    blue3 = load_image(f"{DATA_DIR}/{PATTERNS_DIR}/image31.jpg")
+    red0 = load_image(f"{DATA_DIR}/{PATTERNS_DIR}/image02.png")
+    red1 = load_image(f"{DATA_DIR}/{PATTERNS_DIR}/image12.png")
+    red2 = load_image(f"{DATA_DIR}/{PATTERNS_DIR}/image22.png")
+    red3 = load_image(f"{DATA_DIR}/{PATTERNS_DIR}/image32.png")
+    blue0 = load_image(f"{DATA_DIR}/{PATTERNS_DIR}/image01.png")
+    blue1 = load_image(f"{DATA_DIR}/{PATTERNS_DIR}/image11.png")
+    blue2 = load_image(f"{DATA_DIR}/{PATTERNS_DIR}/image21.png")
+    blue3 = load_image(f"{DATA_DIR}/{PATTERNS_DIR}/image31.png")
 
     def __init__(self, color, mixer):
         super().__init__(all_sprites, players)
@@ -84,6 +86,9 @@ class Player(pygame.sprite.Sprite):
             self.image = eval(f"self.{self.color}{self.orient}")
         a = pygame.sprite.spritecollideany(self, health_box)
         if a:
+            snd = pygame.mixer.Sound(f"{DATA_DIR}/sounds/health1.wav")
+            snd.set_volume(SHOT_VOLUME)
+            self.mixer.Channel(health_channel).play(snd)
             health_box.remove(a)
             all_sprites.remove(a)
             self.health += 1
@@ -226,6 +231,9 @@ def main():
     snd.set_volume(MUSIC_VOLUME)
     mixer.Channel(music_channel).play(snd)
     move_list = []
+    bar = Top_bar((W, BAR_HEIGHT))
+    bar.set_health(b, r)
+    display.blit(bar, (0, 0))
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -267,8 +275,36 @@ def main():
         field.render(display)
         all_sprites.update()
         all_sprites.draw(display)
+        bar.update()
+        display.blit(bar, (0, 0))
         pygame.display.update()
         clock.tick(FPS)
+
+
+class Top_bar(pygame.Surface):
+    def __init__(self, *size):
+        super().__init__(*size)
+        self.fill((255, 229, 180))
+        self.health = []
+        self.red = load_image(f"{DATA_DIR}/{PATTERNS_DIR}/life1.png")
+        self.blue = load_image(f"{DATA_DIR}/{PATTERNS_DIR}/life2.png")
+
+    def update(self):
+        self.fill((255, 229, 180))
+        for i in self.health:
+            print(i.health)
+            if i.color == "blue":
+                for j in range(i.health):
+                    img = self.blue
+                    self.blit(img, (TILE_SIZE * j + 5 * j, BAR_HEIGHT // 2 - TILE_SIZE // 2))
+            else:
+                for j in range(i.health):
+                    img = self.red
+                    self.blit(img, (W - TILE_SIZE * j - 5 * j - TILE_SIZE, BAR_HEIGHT // 2 - TILE_SIZE // 2))
+
+    def set_health(self, *player):
+        for i in range(len(player)):
+            self.health.append(player[i])
 
 
 # начальный экран
