@@ -23,8 +23,10 @@ PATTERNS_DIR = "patterns"
 music_channel = 0
 bshot_channel = 1
 rshot_channel = 2
+bullet_channel = 3
 MUSIC_VOLUME = 1.0
 SHOT_VOLUME = 0.7
+BULLET_VOLUME = 0.3
 
 SETHEALTHEVENT = pygame.USEREVENT + 1
 all_sprites = pygame.sprite.Group()
@@ -53,10 +55,11 @@ class Player(pygame.sprite.Sprite):
     blue2 = load_image(f"{DATA_DIR}/{PATTERNS_DIR}/image21.jpg")
     blue3 = load_image(f"{DATA_DIR}/{PATTERNS_DIR}/image31.jpg")
 
-    def __init__(self, color):
+    def __init__(self, color, mixer):
         super().__init__(all_sprites, players)
         self.orient = 0
         self.health = 5
+        self.mixer = mixer
         self.color = color
         self.image = eval(f"self.{color}{self.orient}")
         if color == "blue":
@@ -85,21 +88,22 @@ class Player(pygame.sprite.Sprite):
             all_sprites.remove(a)
             self.health += 1
 
-    def shot(self, mixer):
+    def shot(self):
         snd = pygame.mixer.Sound(f"{DATA_DIR}/sounds/shot.wav")
         snd.set_volume(SHOT_VOLUME)
-        Bullet(self.rect.x, self.rect.y, self.orient)
+        Bullet(self.rect.x, self.rect.y, self.orient, self.mixer)
         if self.color == "blue":
-            mixer.Channel(bshot_channel).play(snd)
+            self.mixer.Channel(bshot_channel).play(snd)
         else:
-            mixer.Channel(rshot_channel).play(snd)
+            self.mixer.Channel(rshot_channel).play(snd)
 
 
 # класс пуль
 class Bullet(pygame.sprite.Sprite):
-    def __init__(self, x, y, orient):
+    def __init__(self, x, y, orient, mixer):
         super().__init__(bullets, all_sprites)
         self.orient = orient
+        self.mixer = mixer
         dx = 0
         dy = 0
         self.vect = (0, 0)
@@ -130,10 +134,19 @@ class Bullet(pygame.sprite.Sprite):
         p = pygame.sprite.spritecollideany(self, players)
         w = pygame.sprite.spritecollideany(self, map_objects)
         if w:
+            n = c([0, 1, 3])
+            snd = pygame.mixer.Sound(f"{DATA_DIR}/sounds/bullet{n}.wav")
+            snd.set_volume(BULLET_VOLUME)
+            self.mixer.Channel(bullet_channel).play(snd)
             bullets.remove(self)
             all_sprites.remove(self)
             del self
         elif p:
+            n = c([0, 1])
+            snd = pygame.mixer.Sound(f"{DATA_DIR}/sounds/player_s_shot{n}.wav")
+            snd.set_volume(BULLET_VOLUME)
+            snd.fadeout(10)
+            self.mixer.Channel(bullet_channel).play(snd)
             p.health -= 1
             bullets.remove(self)
             all_sprites.remove(self)
@@ -205,10 +218,10 @@ def main():
     pygame.time.set_timer(SETHEALTHEVENT, 20000)
     clock = pygame.time.Clock()
     display = pygame.display.set_mode((W, H), pygame.FULLSCREEN | pygame.DOUBLEBUF)
-    b = Player("blue")
-    r = Player("red")
-    field = Field("map")
     mixer = pygame.mixer
+    b = Player("blue", mixer)
+    r = Player("red", mixer)
+    field = Field("map")
     snd = pygame.mixer.Sound(f"{DATA_DIR}/sounds/music.wav")
     snd.set_volume(MUSIC_VOLUME)
     mixer.Channel(music_channel).play(snd)
@@ -221,9 +234,9 @@ def main():
                 if event.key == pygame.K_ESCAPE:
                     paused()
                 elif event.key == pygame.K_g:
-                    b.shot(mixer)
+                    b.shot()
                 elif event.key == pygame.K_p:
-                    r.shot(mixer)
+                    r.shot()
                 elif event.key == pygame.K_w:
                     move_list.append((0, -1, NORTH, event.key))
                 elif event.key == pygame.K_s:
