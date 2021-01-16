@@ -3,7 +3,7 @@
  <tileset firstgid="1" source="map_tiles.tsx"/>
  <layer id="2" name="Слой тайлов 1" width="54" height="30">
   <data encoding="base64" compression="zlib">
-   eJzlmEsOgCAMBUHRcP8Tu9GEkNcKFaGUxSwMtunUD5/dObcvhldQw6qs1ntfQB6zJWitOTCcjFfoUHtM4MYQXG7OC9XR2it1QF7S3JQXIjR2S3ON9PrDjXMu9ULvVq1XLzfKCzlsAIlXDx4vVHNJvHYvaXyNF9crqp/SebCFV+m9b17SWIovXjX09hrtlI+H+zpWxGt10/a8rH5flv+Hs89fVtcbVteHCAvr+a9eFvZfM+yXD4aZzzesnkeNqGs0q3prgOr9BQJpEzg=
+   eJzlmEsOgCAMBZGgMdz/wG40IeS1QkUoZTELg2069cMnOufiYmwKaliV1Xq/FZDH+AStNQeGg/EKHWo/E7gxBJeb80J1tPZKHZCXNDflhQiN3dJcI73+cOOcS73Qu1Xr1cuN8kIOHiDx6sHjhWouidfuJY2v8eJ6RfVTOg+28Cq9981LGkvxxauG3l6jnfLxcF+fFfFa3bQ9L6vfl+X/4ezzl9X1htX1IcLCev6rl4X91wz75Z1h5vMNq+dRI+oayYrOmqD6fwEXWzkQ
   </data>
  </layer>
 </map>

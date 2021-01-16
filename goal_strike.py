@@ -109,28 +109,29 @@ class Bullet(pygame.sprite.Sprite):
         super().__init__(bullets, all_sprites)
         self.orient = orient
         self.mixer = mixer
+        self.m = int(0.5 / FPS * 1000)
         dx = 0
         dy = 0
         self.vect = (0, 0)
         if orient == WEST:
             dx = -10
             dy = 15
-            self.vect = (-15, 0)
+            self.vect = (-self.m, 0)
             self.image = pygame.Surface((5, 2))
         elif orient == NORTH:
             dx = 15
             dy = -10
-            self.vect = (0, -15)
+            self.vect = (0, -self.m)
             self.image = pygame.Surface((2, 5))
         elif orient == EAST:
             dx = 35
             dy = 15
-            self.vect = (15, 0)
+            self.vect = (self.m, 0)
             self.image = pygame.Surface((5, 2))
         elif orient == SOUTH:
             dx = 15
             dy = 35
-            self.vect = (0, 15)
+            self.vect = (0, self.m)
             self.image = pygame.Surface((2, 5))
         self.image.fill((181, 166, 66))
         self.rect = self.image.get_rect().move(x + dx, y + dy)
@@ -187,8 +188,10 @@ class Field:
         right_board.image = pygame.Surface((TILE_SIZE, TILE_SIZE))
         right_board.rect = pygame.Rect(self.width * TILE_SIZE - 1, 1, 1, self.height * TILE_SIZE)
         top_board = pygame.sprite.Sprite(map_objects)
-        top_board.image = pygame.Surface((TILE_SIZE, TILE_SIZE))
-        top_board.rect = pygame.Rect(1, BAR_HEIGHT - 5, self.width * TILE_SIZE, 1)
+        map_objects.add(top_board)
+        top_board.image = pygame.Surface((self.width * TILE_SIZE, 4))
+        top_board.image.fill((255, 0, 0))
+        top_board.rect = pygame.Rect(0, BAR_HEIGHT - 10, self.width * TILE_SIZE, 10)
         bottom_board = pygame.sprite.Sprite(map_objects)
         bottom_board.image = pygame.Surface((TILE_SIZE, TILE_SIZE))
         bottom_board.rect = pygame.Rect(1, self.height * TILE_SIZE - 1, self.width * TILE_SIZE, 1)
@@ -201,15 +204,15 @@ class Field:
 
     def set_health(self, cords=None):
         health = pygame.sprite.Sprite(health_box, all_sprites)
-        health.image = load_image(f"{DATA_DIR}/{PATTERNS_DIR}/health1.jpg")
+        health.image = load_image(f"{DATA_DIR}/{PATTERNS_DIR}/health2.jpg")
         if cords is not None:
-            health.rect = health.image.get_rect().move(cords[0] * TILE_SIZE, cords[1] * TILE_SIZE)
+            health.rect = health.image.get_rect().move(cords[0] * TILE_SIZE + 1, cords[1] * TILE_SIZE + 1)
         else:
-            health.rect = health.image.get_rect().move(c(range(10, self.width - 10)) * TILE_SIZE,
-                                                       c(range(2, self.height)) * TILE_SIZE)
+            health.rect = health.image.get_rect().move(c(range(10, self.width - 10)) * TILE_SIZE + 1,
+                                                       c(range(2, self.height)) * TILE_SIZE + 1)
             while pygame.sprite.spritecollideany(health, map_objects):
-                health.rect = health.image.get_rect().move(c(range(10, self.width - 10)) * TILE_SIZE,
-                                                           c(range(2, self.height)) * TILE_SIZE)
+                health.rect = health.image.get_rect().move(c(range(10, self.width - 10)) * TILE_SIZE + 1,
+                                                           c(range(2, self.height)) * TILE_SIZE + 1)
 
 
 def terminate():
@@ -292,7 +295,6 @@ class Top_bar(pygame.Surface):
     def update(self):
         self.fill((255, 229, 180))
         for i in self.health:
-            print(i.health)
             if i.color == "blue":
                 for j in range(i.health):
                     img = self.blue
