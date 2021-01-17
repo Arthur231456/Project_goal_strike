@@ -1,0 +1,50 @@
+{
+    "Map/SizeTest": {
+        "height": 4300,
+        "width": 2
+    },
+    "activeFile": "",
+    "expandedProjectPaths": [
+    ],
+    "file.lastUsedOpenFilter": "Все файлы (*)",
+    "fileStates": {
+        "D:/ПИТОНН/Ptoject_Goal_Strike/source/MAPS/map.tmx": {
+            "scale": 0.8221604938271605,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 810.0608153765298,
+                "y": 450.0337863202944
+            }
+        },
+        "D:/ПИТОНН/Ptoject_Goal_Strike/source/MAPS/map2.tmx": {
+            "scale": 0.8376729559748427,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 795.0596891658532,
+                "y": 450.0563105338239
+            }
+        },
+        "D:/ПИТОНН/Ptoject_Goal_Strike/source/MAPS/map2_tiles.tsx": {
+            "dynamicWrapping": true
+        },
+        "D:/ПИТОНН/Ptoject_Goal_Strike/source/MAPS/map3.tmx": {
+            "scale": 0.8072121212121212,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 795.3299797282078,
+                "y": 450.9347548614761
+            }
+        }
+    },
+    "map.height": 30,
+    "map.lastUsedFormat": "tmx",
+    "map.tileHeight": 30,
+    "map.tileWidth": 30,
+    "map.width": 55,
+    "openFiles": [
+    ],
+    "project": "",
+    "recentFiles": [
+        "D:/ПИТОНН/Ptoject_Goal_Strike/source/MAPS/map3.tmx"
+    ]
+}
