@@ -74,6 +74,7 @@ class Player(pygame.sprite.Sprite):
         self.health = 5
         self.bullets = 20
         self.reserve = 60
+        self.score = 0
         self.delay = 0
         self.mixer = mixer
         self.color = color
@@ -116,7 +117,7 @@ class Player(pygame.sprite.Sprite):
             all_sprites.remove(b)
             self.reserve += 20
         try:
-            pygame.sprite.spritecollideany(self, capture_points).change_color(self.color)
+            pygame.sprite.spritecollideany(self, capture_points).change_color(self)
         except:
             pass
 
@@ -158,6 +159,10 @@ class Player(pygame.sprite.Sprite):
     def update(self):
         if self.delay > 0:
             self.delay -= 1000 // FPS
+        self.score = 0
+        for i in capture_points:
+            if i.image == eval(f"CapturePoints.{self.color}"):
+                self.score += 1
 
 
 # класс пуль
@@ -301,7 +306,7 @@ def main(map):
     pygame.time.set_timer(SETHEALTHEVENT, 20000)
     pygame.time.set_timer(SETHEALTHEVENT, 30000)
     if map == 1:
-        pygame.time.set_timer(GAMEENDEVENT, 120000)
+        pygame.time.set_timer(GAMEENDEVENT, 150000)
     clock = pygame.time.Clock()
     display = pygame.display.set_mode((W, H), pygame.FULLSCREEN | pygame.DOUBLEBUF)
     mixer = pygame.mixer
@@ -410,11 +415,29 @@ class Top_bar(pygame.Surface):
     def update(self, time, mode):
         self.fill((255, 229, 180))
         if mode == 1:
-            time = (120000 - time) / 60000
+            time = (150000 - time) / 60000
+            if time <= 0:
+                time = 0
             m = self.font1.render(str(int(time)), 4, (181, 166, 66))
-            s = self.font1.render(str(int((time - int(time)) * 60)), 4, (181, 166, 66))
+            a = int((time - int(time)) * 60)
+            if a < 10:
+                a = "0" + str(a)
+            else:
+                a = str(a)
+            s = self.font1.render(a, 4, (181, 166, 66))
             self.blit(m, (W // 2 - 30, BAR_HEIGHT // 2 - TILE_SIZE // 2 + 5))
             self.blit(s, (W // 2 + 15, BAR_HEIGHT // 2 - TILE_SIZE // 2 + 5))
+            for i in players:
+                if i.color == "blue":
+                    t = self.font2.render("score:", 4, (181, 166, 66))
+                    s = self.font1.render(str(i.score), 4, (181, 166, 66))
+                    self.blit(t, (W // 2 - 240, BAR_HEIGHT // 2 - TILE_SIZE // 2 + 5))
+                    self.blit(s, (W // 2 - 200, BAR_HEIGHT // 2 - TILE_SIZE // 2 + 5))
+                else:
+                    t = self.font2.render("score:", 4, (181, 166, 66))
+                    s = self.font1.render(str(i.score), 4, (181, 166, 66))
+                    self.blit(t, (W // 2 + 160, BAR_HEIGHT // 2 - TILE_SIZE // 2 + 5))
+                    self.blit(s, (W // 2 + 200, BAR_HEIGHT // 2 - TILE_SIZE // 2 + 5))
         for i in self.health:
             if i.color == "blue":
                 for j in range(i.health):
@@ -453,13 +476,13 @@ class CapturePoints(pygame.sprite.Sprite):
         self.mixer = mixer
         self.rect = self.image.get_rect().move((x * TILE_SIZE + 1, y * TILE_SIZE + 1))
 
-    def change_color(self, color):
-        if self.color != color:
+    def change_color(self, player):
+        if self.color != player.color:
             snd = pygame.mixer.Sound(f"{DATA_DIR}/sounds/capture_snd.wav")
             snd.set_volume(CAPTURE_VOLUME)
             self.mixer.Channel(capture_channel).play(snd)
-        self.color = color
-        self.image = eval(f"CapturePoints.{color}")
+        self.color = player.color
+        self.image = eval(f"CapturePoints.{player.color}")
 
 
 # начальный экран
@@ -475,10 +498,33 @@ def paused():
 
 # окончание игры, здесь окошко с конечным счетом или надписью имени победителя
 # запускается при срабатывании GAMEENDEVENT в основном цикле
+
 def end():
     pass
 
 
+def welcome_screen():
+    pygame.init()
+    display = pygame.display.set_mode((W, H), pygame.FULLSCREEN | pygame.DOUBLEBUF)
+    image = load_image(f"{DATA_DIR}/{PATTERNS_DIR}/start.png")
+    font = pygame.font.Font(None, 20)
+    t = font.render('Press "ESC" to quit', 1, (255, 255, 255))
+    t1 = font.render('Press "ENTER" to continue', 1, (255, 255, 255))
+    display.blit(image, (0, 0))
+    display.blit(t, (1400, 870))
+    display.blit(t1, (1400, 850))
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                terminate()
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    terminate()
+                elif event.key == pygame.K_RETURN:
+                    main(1)
+        pygame.display.update()
+
+
 if __name__ == "__main__":
     pygame.mixer.init()
-    main(1)
+    welcome_screen()
