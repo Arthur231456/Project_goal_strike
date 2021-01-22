@@ -6,35 +6,47 @@ from random import choice as c
 
 FPS = 40  # частота обновления экрана
 
-EAST = 0  # направления игрока
+# направления игрока
+EAST = 0
 NORTH = 1
 WEST = 2
 SOUTH = 3
+W = pygame.K_q
 
+# размеры
 BAR_HEIGHT = 30
 TILE_SIZE = 30
 W = 1600
 H = 900
 
+# имена директорий с необходимыми файлами
 MAPS_DIR = "MAPS"
 DATA_DIR = "source"
 PATTERNS_DIR = "patterns"
+SETTINGS_FILES = "settings_files"
 MAPS = {1: "map2", 2: "map", 3: "map4"}
 
 with open(f"{DATA_DIR}/{MAPS_DIR}/PLACES.txt") as t:
     PLACES = list(set(eval(f"{t.read()}")))
 
+# каналы и громкости звуков
 music_channel = 0
 bshot_channel = 1
 rshot_channel = 2
 bullet_channel = 3
 health_channel = 4
 capture_channel = 5
-MUSIC_VOLUME = 0.0
-SHOT_VOLUME = 0.7
-BULLET_VOLUME = 0.3
-HEALTH_VOLUME = 0.6
-CAPTURE_VOLUME = 0.3
+
+VOLUMES = {"MUSIC_VOLUME": 0.3,
+           "SHOT_VOLUME": 0.7,
+           "BULLET_VOLUME": 0.3,
+           "HEALTH_VOLUME": 0.6,
+           "CAPTURE_VOLUME": 0.3}
+
+with open(f"{DATA_DIR}/{SETTINGS_FILES}/volumes.info") as t:
+    a = list(map(lambda x: x.rstrip("\n"), t.readlines()))
+    for i in a:
+        VOLUMES[i.split(" = ")[0]] = float(i.split(" = ")[1])
 control = {'g': pygame.K_g,
            'p': pygame.K_p,
            'r': pygame.K_r,
@@ -48,10 +60,12 @@ control = {'g': pygame.K_g,
            'left': pygame.K_LEFT,
            'right': pygame.K_RIGHT}
 
+# события связанные с механикой игры
 SETHEALTHEVENT = pygame.USEREVENT + 1
 SETBULLETEVENT = pygame.USEREVENT + 2
 GAMEENDEVENT = pygame.USEREVENT + 3
 
+# группы спрайтов объектов игры
 all_sprites = pygame.sprite.Group()
 players = pygame.sprite.Group()
 bullets = pygame.sprite.Group()
@@ -59,8 +73,10 @@ map_objects = pygame.sprite.Group()
 health_box = pygame.sprite.Group()
 capture_points = pygame.sprite.Group()
 bullets_box = pygame.sprite.Group()
+groups = [all_sprites, players, bullets, map_objects, health_box, capture_points, bullets_box]
 
 
+# функция загрузки изображения
 def load_image(name, colorkey=None):
     image = pygame.image.load(name)
     if colorkey == -1:
@@ -114,7 +130,7 @@ class Player(pygame.sprite.Sprite):
         a = pygame.sprite.spritecollideany(self, health_box)
         if a:
             snd = pygame.mixer.Sound(f"{DATA_DIR}/sounds/health0.wav")
-            snd.set_volume(SHOT_VOLUME)
+            snd.set_volume(VOLUMES["SHOT_VOLUME"])
             self.mixer.Channel(health_channel).play(snd)
             health_box.remove(a)
             all_sprites.remove(a)
@@ -123,7 +139,7 @@ class Player(pygame.sprite.Sprite):
         b = pygame.sprite.spritecollideany(self, bullets_box)
         if b:
             snd = pygame.mixer.Sound(f"{DATA_DIR}/sounds/add_bullets.wav")
-            snd.set_volume(SHOT_VOLUME)
+            snd.set_volume(VOLUMES["SHOT_VOLUME"])
             self.mixer.Channel(capture_channel).play(snd)
             bullets_box.remove(b)
             all_sprites.remove(b)
@@ -133,10 +149,10 @@ class Player(pygame.sprite.Sprite):
         except:
             pass
 
-    def shot(self):
+    def shot(self):  # функция выстрела
         if self.bullets != 0:
             snd = pygame.mixer.Sound(f"{DATA_DIR}/sounds/shot.wav")
-            snd.set_volume(SHOT_VOLUME)
+            snd.set_volume(VOLUMES["SHOT_VOLUME"])
             Bullet(self.rect.x, self.rect.y, self.orient, self.mixer)
             if self.color == "blue":
                 self.mixer.Channel(bshot_channel).play(snd)
@@ -145,16 +161,16 @@ class Player(pygame.sprite.Sprite):
             self.bullets -= 1
         else:
             snd = pygame.mixer.Sound(f"{DATA_DIR}/sounds/no_bullets.wav")
-            snd.set_volume(SHOT_VOLUME)
+            snd.set_volume(VOLUMES["SHOT_VOLUME"])
             if self.color == "blue":
                 self.mixer.Channel(bshot_channel).play(snd)
             else:
                 self.mixer.Channel(rshot_channel).play(snd)
 
-    def reload_gun(self):
+    def reload_gun(self):  # функция перезарядки
         if self.reserve != 0 and self.bullets != 20:
             snd = pygame.mixer.Sound(f"{DATA_DIR}/sounds/reload.wav")
-            snd.set_volume(SHOT_VOLUME)
+            snd.set_volume(VOLUMES["SHOT_VOLUME"])
             if self.color == "blue":
                 self.mixer.Channel(bshot_channel).play(snd)
             else:
@@ -216,7 +232,7 @@ class Bullet(pygame.sprite.Sprite):
         if w:
             n = c([0, 1, 3])
             snd = pygame.mixer.Sound(f"{DATA_DIR}/sounds/bullet{n}.wav")
-            snd.set_volume(BULLET_VOLUME)
+            snd.set_volume(VOLUMES["BULLET_VOLUME"])
             self.mixer.Channel(bullet_channel).play(snd)
             bullets.remove(self)
             all_sprites.remove(self)
@@ -224,7 +240,7 @@ class Bullet(pygame.sprite.Sprite):
         elif p:
             n = c([0, 1])
             snd = pygame.mixer.Sound(f"{DATA_DIR}/sounds/player_s_shot{n}.wav")
-            snd.set_volume(BULLET_VOLUME)
+            snd.set_volume(VOLUMES["BULLET_VOLUME"])
             snd.fadeout(10)
             self.mixer.Channel(bullet_channel).play(snd)
             p.health -= 1
@@ -273,13 +289,13 @@ class Field:
         self.set_bullets((29, 14))
         self.set_bullets((29, 16))
 
-    def render(self, display):
+    def render(self, display):  # функция отрисовки поля
         for x in range(self.width):
             for y in range(1, self.height):
                 image = self.map.get_tile_image(x, y, 0)
                 display.blit(image, (x * TILE_SIZE, y * TILE_SIZE))
 
-    def set_health(self, cords=None):
+    def set_health(self, cords=None):  # расположение на поле аптечек
         health = pygame.sprite.Sprite(health_box, all_sprites)
         health.image = load_image(f"{DATA_DIR}/{PATTERNS_DIR}/health2.jpg")
         if cords is not None and self.name == "map":
@@ -287,12 +303,12 @@ class Field:
         else:
             health.rect = health.image.get_rect().move(c(range(10, self.width - 10)) * TILE_SIZE + 1,
                                                        c(range(2, self.height)) * TILE_SIZE + 1)
-            while pygame.sprite.spritecollideany(health, map_objects)\
+            while pygame.sprite.spritecollideany(health, map_objects) \
                     or pygame.sprite.spritecollideany(health, capture_points):
                 health.rect = health.image.get_rect().move(c(range(10, self.width - 10)) * TILE_SIZE + 1,
                                                            c(range(2, self.height)) * TILE_SIZE + 1)
 
-    def set_bullets(self, cords=None):
+    def set_bullets(self, cords=None):  # расположение на поле магазинов с патронами
         bullet = pygame.sprite.Sprite(bullets_box, all_sprites)
         bullet.image = load_image(f"{DATA_DIR}/{PATTERNS_DIR}/bullets.jpg")
         if cords is not None and self.name != "map2":
@@ -300,13 +316,13 @@ class Field:
         else:
             bullet.rect = bullet.image.get_rect().move(c(range(10, self.width - 10)) * TILE_SIZE + 1,
                                                        c(range(2, self.height)) * TILE_SIZE + 1)
-            while pygame.sprite.spritecollideany(bullet, map_objects)\
+            while pygame.sprite.spritecollideany(bullet, map_objects) \
                     or pygame.sprite.spritecollideany(bullet, capture_points):
                 bullet.rect = bullet.image.get_rect().move(c(range(10, self.width - 10)) * TILE_SIZE + 1,
                                                            c(range(2, self.height)) * TILE_SIZE + 1)
 
 
-
+# функция выхода из программы
 def terminate():
     pygame.quit()
     sys.exit()
@@ -315,12 +331,29 @@ def terminate():
 # запуск игрового процесса
 def main(map):
     pygame.init()
+    display = pygame.display.set_mode((W, H), pygame.FULLSCREEN | pygame.DOUBLEBUF)
+    display.blit(load_image(f"{DATA_DIR}/{PATTERNS_DIR}/mode{map}.png"), (0, 0))
+    font = pygame.font.Font(None, 20)
+    t = font.render('Press "ESC" to quit', 1, (255, 255, 255))
+    t1 = font.render('Press "ENTER" to continue', 1, (255, 255, 255))
+    display.blit(t, (1400, 870))
+    display.blit(t1, (1400, 850))
+    pygame.display.update()
+    r = True
+    while r:
+        for event in pygame.event.get():
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    pygame.register_quit(start_menu())
+                elif event.key == pygame.K_RETURN:
+                    r = False
+    tm = 0
     pygame.time.set_timer(SETHEALTHEVENT, 20000)
     pygame.time.set_timer(SETHEALTHEVENT, 30000)
     if map == 1:
         pygame.time.set_timer(GAMEENDEVENT, 150000)
     clock = pygame.time.Clock()
-    display = pygame.display.set_mode((W, H), pygame.FULLSCREEN | pygame.DOUBLEBUF)
+
     mixer = pygame.mixer
 
     field = Field(MAPS[map])
@@ -338,21 +371,25 @@ def main(map):
         r.bullets = 1
         r.reserve = 0
     snd = pygame.mixer.Sound(f"{DATA_DIR}/sounds/music.wav")
-    snd.set_volume(MUSIC_VOLUME)
+    snd.set_volume(VOLUMES["MUSIC_VOLUME"])
     mixer.Channel(music_channel).play(snd)
 
     move_list = []
     bar = Top_bar((W, BAR_HEIGHT))
     bar.set_health(b, r)
     display.blit(bar, (0, 0))
-    while True:
+    running = True
+    while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 terminate()
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
-                    paused()
-                    start_menu()
+                    if not paused(display, bar, field):
+                        for i in groups:
+                            i.empty()
+                        pygame.mixer.quit()
+                        pygame.register_quit(start_menu())
                 elif event.key == control['g']:
                     b.shot()
                 elif event.key == control['p']:
@@ -379,6 +416,13 @@ def main(map):
                     move_list.append((1, 0, EAST, event.key))
             elif event.type == SETHEALTHEVENT:
                 field.set_health()
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                if event.pos[0] in range(W // 2 - 15, W // 2 + 5) and event.pos[1] in range(5, 25):
+                    if not paused(display, bar, field):
+                        for i in groups:
+                            i.empty()
+                        pygame.mixer.quit()
+                        pygame.register_quit(start_menu())
             elif event.type == SETBULLETEVENT:
                 field.set_bullets()
             elif event.type == GAMEENDEVENT:
@@ -408,13 +452,14 @@ def main(map):
             bar.set_health(b, r)
         all_sprites.update()
         all_sprites.draw(display)
-        bar.update(pygame.time.get_ticks(), map)
+        tm += 1000 / FPS
+        bar.update(int(tm), map)
         display.blit(bar, (0, 0))
         pygame.display.update()
         clock.tick(FPS)
 
 
-class Top_bar(pygame.Surface):
+class Top_bar(pygame.Surface):  # класс верхней информационной панели
     def __init__(self, *size):
         super().__init__(*size)
         self.fill((255, 229, 180))
@@ -438,7 +483,7 @@ class Top_bar(pygame.Surface):
             else:
                 a = str(a)
             s = self.font1.render(a, 4, (181, 166, 66))
-            self.blit(m, (W // 2 - 30, BAR_HEIGHT // 2 - TILE_SIZE // 2 + 5))
+            self.blit(m, (W // 2 - 35, BAR_HEIGHT // 2 - TILE_SIZE // 2 + 5))
             self.blit(s, (W // 2 + 15, BAR_HEIGHT // 2 - TILE_SIZE // 2 + 5))
             for i in players:
                 if i.color == "blue":
@@ -470,14 +515,17 @@ class Top_bar(pygame.Surface):
                               BAR_HEIGHT // 2 - TILE_SIZE // 2 + 5))
                 self.blit(t1, (W - TILE_SIZE * i.health - 5 * i.health - TILE_SIZE - 50,
                                BAR_HEIGHT // 2 - TILE_SIZE // 2 + 5))
+        pygame.draw.rect(self, (222, 175, 109), (W // 2 - 15, 5, 20, 20))
+        pygame.draw.rect(self, (255, 229, 180), (W // 2 - 11, 8, 4, 14))
+        pygame.draw.rect(self, (255, 229, 180), (W // 2 - 3, 8, 4, 14))
 
-    def set_health(self, *player):
+    def set_health(self, *player):  # функция отображения здоровья персонажей
         self.health = []
         for i in range(len(player)):
             self.health.append(player[i])
 
 
-class CapturePoints(pygame.sprite.Sprite):
+class CapturePoints(pygame.sprite.Sprite):  # класс точек захвата
     img = load_image(f"{DATA_DIR}/{PATTERNS_DIR}/free_place.jpg")
     red = load_image(f"{DATA_DIR}/{PATTERNS_DIR}/place2.jpg")
     blue = load_image(f"{DATA_DIR}/{PATTERNS_DIR}/place1.jpg")
@@ -492,7 +540,7 @@ class CapturePoints(pygame.sprite.Sprite):
     def change_color(self, player):
         if self.color != player.color:
             snd = pygame.mixer.Sound(f"{DATA_DIR}/sounds/capture_snd.wav")
-            snd.set_volume(CAPTURE_VOLUME)
+            snd.set_volume(VOLUMES["CAPTURE_VOLUME"])
             self.mixer.Channel(capture_channel).play(snd)
         self.color = player.color
         self.image = eval(f"CapturePoints.{player.color}")
@@ -504,18 +552,18 @@ def start_menu():
     display = pygame.display.set_mode((W, H), pygame.FULLSCREEN | pygame.DOUBLEBUF)
     image = load_image(f"{DATA_DIR}/{PATTERNS_DIR}/start.png")
     display.blit(image, (0, 0))
-    manager = pygame_gui.UIManager((W, H))
+    manager = pygame_gui.UIManager((W, H), f"{DATA_DIR}/{SETTINGS_FILES}/startmenu.json")
     x = 1100
     y = 300
-    btn_settings = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((700, 600), (200, 100)),
-                                            text='Settings', manager=manager)
-    end = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((700, 750), (200, 100)),
-                                            text='End', manager=manager)
-    mode1 = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((550, 400), (200, 100)),
-                                            text='Mode1', manager=manager)
-    mode2 = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((850, 400), (200, 100)),
-                                            text='Mode2', manager=manager)
-    image = load_image(f"{DATA_DIR}/{PATTERNS_DIR}/settings.jpg")
+    btn_settings = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((W // 2 - 150, 700), (300, 75)),
+                                                text='Настройки', manager=manager)
+    end = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((W // 2 - 150, 800), (300, 75)),
+                                       text='Выход', manager=manager)
+    mode1 = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((W // 2 - 300, 500), (300, 75)),
+                                         text='Захват точек', manager=manager)
+    mode2 = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((W // 2 + 10, 500), (300, 75)),
+                                         text='Быстрая игра', manager=manager)
+    # image = load_image(f"{DATA_DIR}/{PATTERNS_DIR}/settings.jpg")
     clock = pygame.time.Clock()
     while True:
         time_delta = clock.tick(60) / 1000.0
@@ -546,15 +594,16 @@ def settings():
     display = pygame.display.set_mode((W, H), pygame.FULLSCREEN | pygame.DOUBLEBUF)
     image = load_image(f"{DATA_DIR}/{PATTERNS_DIR}/start.png")
     display.blit(image, (0, 0))
-    manager = pygame_gui.UIManager((W, H))
-    come_back= pygame_gui.elements.UIButton(relative_rect=pygame.Rect((700, 750), (200, 100)),
-                                            text='Come back', manager=manager)
-    control = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((700, 600), (200, 100)),
-                                            text='Control', manager=manager)
-    volume = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((700, 450), (200, 100)),
-                                            text='Volume', manager=manager)
+    manager = pygame_gui.UIManager((W, H), f"{DATA_DIR}/{SETTINGS_FILES}/startmenu.json")
+    come_back = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((W // 2 - 150, 800), (300, 75)),
+                                             text='Назад / Применить', manager=manager)
+    control = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((W // 2 - 150, 600), (300, 75)),
+                                           text='Управление', manager=manager)
+    volume = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((W // 2 - 150, 500), (300, 75)),
+                                          text='Звуки и громкость', manager=manager)
     clock = pygame.time.Clock()
-    while True:
+    running = True
+    while running:
         time_delta = clock.tick(60) / 1000.0
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -565,7 +614,10 @@ def settings():
             elif event.type == pygame.USEREVENT:
                 if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
                     if event.ui_element == come_back:
-                        start_menu()
+                        display.fill((0, 0, 0))
+                        display.blit(image, (0, 0))
+                        running = False
+                        return True
                     elif event.ui_element == control:
                         main(1)
                     elif event.ui_element == volume:
@@ -577,37 +629,42 @@ def settings():
 
 
 def Volume():
-    global MUSIC_VOLUME, SHOT_VOLUME, BULLET_VOLUME, HEALTH_VOLUME, CAPTURE_VOLUME
+    global VOLUMES
     pygame.init()
     display = pygame.display.set_mode((W, H), pygame.FULLSCREEN | pygame.DOUBLEBUF)
     image = load_image(f"{DATA_DIR}/{PATTERNS_DIR}/start.png")
     display.blit(image, (0, 0))
-    manager = pygame_gui.UIManager((W, H))
-    come_back= pygame_gui.elements.UIButton(relative_rect=pygame.Rect((700, 750), (200, 100)),
-                                            text='Come back', manager=manager)
+    manager = pygame_gui.UIManager((W, H), f"{DATA_DIR}/{SETTINGS_FILES}/startmenu.json")
+    come_back = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((700, 750), (300, 75)),
+                                             text='Назад / Применить', manager=manager)
     font = pygame.font.Font(None, 46)
-    text_music_value = font.render(f"Music volume", True, (100, 255, 100))
-    music_value = font.render(f"{MUSIC_VOLUME}", True, (100, 255, 100))
+    text_music_value = font.render(f"Music volume", True, (255, 229, 180))
+    music_value = font.render(f"{VOLUMES['MUSIC_VOLUME']}", True, (255, 229, 180))
     music = pygame_gui.elements.UIHorizontalSlider(relative_rect=pygame.Rect((750, 400), (250, 25)),
-                                           start_value=MUSIC_VOLUME * 100, value_range=(0, 100), manager=manager)
-    text_shot_volume = font.render(f"Shot volume", True, (100, 255, 100))
-    shot_volume = font.render(f"{SHOT_VOLUME}", True, (100, 255, 100))
+                                                   start_value=VOLUMES['MUSIC_VOLUME'] * 100, value_range=(0, 100),
+                                                   manager=manager)
+    text_shot_volume = font.render(f"Shot volume", True, (255, 229, 180))
+    shot_volume = font.render(f"{VOLUMES['SHOT_VOLUME']}", True, (255, 229, 180))
     shot = pygame_gui.elements.UIHorizontalSlider(relative_rect=pygame.Rect((750, 460), (250, 25)),
-                                           start_value=SHOT_VOLUME * 100, value_range=(0, 100), manager=manager)
-    text_bullet_volume = font.render(f"Bullet volume", True, (100, 255, 100))
-    bullet_volume = font.render(f"{BULLET_VOLUME}", True, (100, 255, 100))
+                                                  start_value=VOLUMES['SHOT_VOLUME'] * 100, value_range=(0, 100), manager=manager)
+    text_bullet_volume = font.render(f"Bullet volume", True, (255, 229, 180))
+    bullet_volume = font.render(f"{VOLUMES['BULLET_VOLUME']}", True, (255, 229, 180))
     bullet = pygame_gui.elements.UIHorizontalSlider(relative_rect=pygame.Rect((750, 520), (250, 25)),
-                                           start_value=BULLET_VOLUME * 100, value_range=(0, 100), manager=manager)
-    text_health_volume = font.render(f"Health volume", True, (100, 255, 100))
-    health_volume = font.render(f"{HEALTH_VOLUME}", True, (100, 255, 100))
+                                                    start_value=VOLUMES['BULLET_VOLUME'] * 100, value_range=(0, 100),
+                                                    manager=manager)
+    text_health_volume = font.render(f"Health volume", True, (255, 229, 180))
+    health_volume = font.render(f"{VOLUMES['HEALTH_VOLUME']}", True, (255, 229, 180))
     health = pygame_gui.elements.UIHorizontalSlider(relative_rect=pygame.Rect((750, 580), (250, 25)),
-                                           start_value=HEALTH_VOLUME * 100, value_range=(0, 100), manager=manager)
-    text_capture_volume = font.render(f"Capture volume", True, (100, 255, 100))
-    capture_volume = font.render(f"{CAPTURE_VOLUME}", True, (100, 255, 100))
+                                                    start_value=VOLUMES['HEALTH_VOLUME'] * 100, value_range=(0, 100),
+                                                    manager=manager)
+    text_capture_volume = font.render(f"Capture volume", True, (255, 229, 180))
+    capture_volume = font.render(f"{VOLUMES['CAPTURE_VOLUME']}", True, (255, 229, 180))
     capture = pygame_gui.elements.UIHorizontalSlider(relative_rect=pygame.Rect((750, 640), (250, 25)),
-                                           start_value=CAPTURE_VOLUME * 100, value_range=(0, 100), manager=manager)
+                                                     start_value=VOLUMES['CAPTURE_VOLUME'] * 100, value_range=(0, 100),
+                                                     manager=manager)
     clock = pygame.time.Clock()
-    while True:
+    running = True
+    while running:
         time_delta = clock.tick(60) / 1000.0
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -618,24 +675,33 @@ def Volume():
             elif event.type == pygame.USEREVENT:
                 if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
                     if event.ui_element == come_back:
-                        start_menu()
+                        display.fill((0, 0, 0))
+                        display.blit(image, (0, 0))
+                        running = False
+                        return True
                 elif event.user_type == pygame_gui.UI_HORIZONTAL_SLIDER_MOVED:
                     if event.ui_element == music:
-                        MUSIC_VOLUME = music.get_current_value() // 1 / 100
-                        music_value = font.render(f"{MUSIC_VOLUME}", True, (100, 255, 100))
+                        VOLUMES['MUSIC_VOLUME'] = music.get_current_value() // 1 / 100
+                        music_value = font.render(f"{VOLUMES['MUSIC_VOLUME']}", True, (255, 229, 180))
                     elif event.ui_element == shot:
-                        SHOT_VOLUME = shot.get_current_value() // 1 / 100
-                        shot_volume = font.render(f"{SHOT_VOLUME}", True, (100, 255, 100))
+                        VOLUMES['SHOT_VOLUME'] = shot.get_current_value() // 1 / 100
+                        shot_volume = font.render(f"{VOLUMES['SHOT_VOLUME']}", True, (255, 229, 180))
                     elif event.ui_element == bullet:
-                        BULLET_VOLUME = bullet.get_current_value() // 1 / 100
-                        bullet_volume = font.render(f"{BULLET_VOLUME}", True, (100, 255, 100))
+                        VOLUMES['BULLET_VOLUME'] = bullet.get_current_value() // 1 / 100
+                        bullet_volume = font.render(f"{VOLUMES['BULLET_VOLUME']}", True, (255, 229, 180))
                     elif event.ui_element == health:
-                        HEALTH_VOLUME = health.get_current_value() // 1 / 100
-                        health_volume = font.render(f"{HEALTH_VOLUME}", True, (100, 255, 100))
+                        VOLUMES['HEALTH_VOLUME'] = health.get_current_value() // 1 / 100
+                        health_volume = font.render(f"{VOLUMES['HEALTH_VOLUME']}", True, (255, 229, 180))
                     elif event.ui_element == capture:
-                        CAPTURE_VOLUME = capture.get_current_value() // 1 / 100
-                        capture_volume = font.render(f"{CAPTURE_VOLUME}", True, (100, 255, 100))
+                        VOLUMES['CAPTURE_VOLUME'] = capture.get_current_value() // 1 / 100
+                        capture_volume = font.render(f"{VOLUMES['CAPTURE_VOLUME']}", True, (255, 229, 180))
+                    with open(f"{DATA_DIR}/sounds/volumes.info", "w") as t:
+                        for vol in VOLUMES:
+                            t.write(f"{vol} = {VOLUMES[vol]}\n")
             manager.process_events(event)
+        snd = pygame.mixer.Sound(f"{DATA_DIR}/sounds/music.wav")
+        snd.set_volume(VOLUMES["MUSIC_VOLUME"])
+        pygame.mixer.Channel(music_channel).play(snd)
         display.blit(image, (0, 0))
         display.blit(text_music_value, (480, 400))
         display.blit(text_capture_volume, (480, 640))
@@ -653,8 +719,43 @@ def Volume():
 
 
 # пауза
-def paused():
-    pass
+def paused(display, bar, field):
+    clock = pygame.time.Clock()
+    background = pygame.Surface((320, 180))
+    background.fill((255, 229, 180))
+    time_delta = clock.tick(FPS) / 1000.0
+    manager = pygame_gui.UIManager((W, H), f"{DATA_DIR}/{SETTINGS_FILES}/set.json")
+    resume_game = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((W // 2 - 140, H // 2 - 40), (280, 30)),
+                                               text='Возобновить игру', manager=manager)
+    exit_button = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((W // 2 - 140, H // 2 + 40), (280, 30)),
+                                               text='Завершить игру', manager=manager)
+    open_settings = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((W // 2 - 140, H // 2), (280, 30)),
+                                                 text='Настройки', manager=manager)
+    running = True
+    while running:
+        for event in pygame.event.get():
+            if event.type == pygame.USEREVENT:
+                if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
+                    if event.ui_element == resume_game:
+                        running = False
+                        return True
+                    elif event.ui_element == exit_button:
+                        running = False
+                        return False
+                    elif event.ui_element == open_settings:
+                        settings()
+                        map_objects.draw(display)
+                        field.render(display)
+                        all_sprites.update()
+                        all_sprites.draw(display)
+                        bar.update(pygame.time.get_ticks(), map)
+                        display.blit(bar, (0, 0))
+                        pygame.display.update()
+            manager.process_events(event)
+        display.blit(background, (W // 2 - 160, H // 2 - 90))
+        manager.draw_ui(display)
+        manager.update(time_delta)
+        pygame.display.update()
 
 
 # окончание игры, здесь окошко с конечным счетом или надписью имени победителя
@@ -664,6 +765,7 @@ def end():
     pass
 
 
+# функция заставки
 def welcome_screen():
     pygame.init()
     display = pygame.display.set_mode((W, H), pygame.FULLSCREEN | pygame.DOUBLEBUF)
