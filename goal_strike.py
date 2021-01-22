@@ -30,11 +30,23 @@ rshot_channel = 2
 bullet_channel = 3
 health_channel = 4
 capture_channel = 5
-MUSIC_VOLUME = 0
+MUSIC_VOLUME = 0.0
 SHOT_VOLUME = 0.7
 BULLET_VOLUME = 0.3
 HEALTH_VOLUME = 0.6
 CAPTURE_VOLUME = 0.3
+control = {'g': pygame.K_g,
+           'p': pygame.K_p,
+           'r': pygame.K_r,
+           'l': pygame.K_l,
+           'w': pygame.K_w,
+           's': pygame.K_s,
+           'a': pygame.K_a,
+           'd': pygame.K_d,
+           'up': pygame.K_UP,
+           'down': pygame.K_DOWN,
+           'left': pygame.K_LEFT,
+           'right': pygame.K_RIGHT}
 
 SETHEALTHEVENT = pygame.USEREVENT + 1
 SETBULLETEVENT = pygame.USEREVENT + 2
@@ -340,29 +352,30 @@ def main(map):
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     paused()
-                elif event.key == pygame.K_g:
+                    start_menu()
+                elif event.key == control['g']:
                     b.shot()
-                elif event.key == pygame.K_p:
+                elif event.key == control['p']:
                     r.shot()
-                elif event.key == pygame.K_r:
+                elif event.key == control['r']:
                     b.reload_gun()
-                elif event.key == pygame.K_l:
+                elif event.key == control['l']:
                     r.reload_gun()
-                elif event.key == pygame.K_w:
+                elif event.key == control['w']:
                     move_list.append((0, -1, NORTH, event.key))
-                elif event.key == pygame.K_s:
+                elif event.key == control['s']:
                     move_list.append((0, 1, SOUTH, event.key))
-                elif event.key == pygame.K_a:
+                elif event.key == control['a']:
                     move_list.append((-1, 0, WEST, event.key))
-                elif event.key == pygame.K_d:
+                elif event.key == control['d']:
                     move_list.append((1, 0, EAST, event.key))
-                elif event.key == pygame.K_UP:
+                elif event.key == control['up']:
                     move_list.append((0, -1, NORTH, event.key))
-                elif event.key == pygame.K_DOWN:
+                elif event.key == control['down']:
                     move_list.append((0, 1, SOUTH, event.key))
-                elif event.key == pygame.K_LEFT:
+                elif event.key == control['left']:
                     move_list.append((-1, 0, WEST, event.key))
-                elif event.key == pygame.K_RIGHT:
+                elif event.key == control['right']:
                     move_list.append((1, 0, EAST, event.key))
             elif event.type == SETHEALTHEVENT:
                 field.set_health()
@@ -487,8 +500,156 @@ class CapturePoints(pygame.sprite.Sprite):
 
 # начальный экран
 def start_menu():
-    pass
-    # menu = Menu()
+    pygame.init()
+    display = pygame.display.set_mode((W, H), pygame.FULLSCREEN | pygame.DOUBLEBUF)
+    image = load_image(f"{DATA_DIR}/{PATTERNS_DIR}/start.png")
+    display.blit(image, (0, 0))
+    manager = pygame_gui.UIManager((W, H))
+    x = 1100
+    y = 300
+    btn_settings = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((700, 600), (200, 100)),
+                                            text='Settings', manager=manager)
+    end = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((700, 750), (200, 100)),
+                                            text='End', manager=manager)
+    mode1 = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((550, 400), (200, 100)),
+                                            text='Mode1', manager=manager)
+    mode2 = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((850, 400), (200, 100)),
+                                            text='Mode2', manager=manager)
+    image = load_image(f"{DATA_DIR}/{PATTERNS_DIR}/settings.jpg")
+    clock = pygame.time.Clock()
+    while True:
+        time_delta = clock.tick(60) / 1000.0
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                terminate()
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    pass
+            elif event.type == pygame.USEREVENT:
+                if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
+                    if event.ui_element == btn_settings:
+                        settings()
+                    elif event.ui_element == end:
+                        terminate()
+                    elif event.ui_element == mode1:
+                        main(1)
+                    elif event.ui_element == mode2:
+                        main(2)
+            manager.process_events(event)
+        manager.update(time_delta)
+        manager.draw_ui(display)
+        pygame.display.update()
+
+
+def settings():
+    pygame.init()
+    display = pygame.display.set_mode((W, H), pygame.FULLSCREEN | pygame.DOUBLEBUF)
+    image = load_image(f"{DATA_DIR}/{PATTERNS_DIR}/start.png")
+    display.blit(image, (0, 0))
+    manager = pygame_gui.UIManager((W, H))
+    come_back= pygame_gui.elements.UIButton(relative_rect=pygame.Rect((700, 750), (200, 100)),
+                                            text='Come back', manager=manager)
+    control = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((700, 600), (200, 100)),
+                                            text='Control', manager=manager)
+    volume = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((700, 450), (200, 100)),
+                                            text='Volume', manager=manager)
+    clock = pygame.time.Clock()
+    while True:
+        time_delta = clock.tick(60) / 1000.0
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                terminate()
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    pass
+            elif event.type == pygame.USEREVENT:
+                if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
+                    if event.ui_element == come_back:
+                        start_menu()
+                    elif event.ui_element == control:
+                        main(1)
+                    elif event.ui_element == volume:
+                        Volume()
+            manager.process_events(event)
+        manager.update(time_delta)
+        manager.draw_ui(display)
+        pygame.display.update()
+
+
+def Volume():
+    global MUSIC_VOLUME, SHOT_VOLUME, BULLET_VOLUME, HEALTH_VOLUME, CAPTURE_VOLUME
+    pygame.init()
+    display = pygame.display.set_mode((W, H), pygame.FULLSCREEN | pygame.DOUBLEBUF)
+    image = load_image(f"{DATA_DIR}/{PATTERNS_DIR}/start.png")
+    display.blit(image, (0, 0))
+    manager = pygame_gui.UIManager((W, H))
+    come_back= pygame_gui.elements.UIButton(relative_rect=pygame.Rect((700, 750), (200, 100)),
+                                            text='Come back', manager=manager)
+    font = pygame.font.Font(None, 46)
+    text_music_value = font.render(f"Music volume", True, (100, 255, 100))
+    music_value = font.render(f"{MUSIC_VOLUME}", True, (100, 255, 100))
+    music = pygame_gui.elements.UIHorizontalSlider(relative_rect=pygame.Rect((750, 400), (250, 25)),
+                                           start_value=MUSIC_VOLUME * 100, value_range=(0, 100), manager=manager)
+    text_shot_volume = font.render(f"Shot volume", True, (100, 255, 100))
+    shot_volume = font.render(f"{SHOT_VOLUME}", True, (100, 255, 100))
+    shot = pygame_gui.elements.UIHorizontalSlider(relative_rect=pygame.Rect((750, 460), (250, 25)),
+                                           start_value=SHOT_VOLUME * 100, value_range=(0, 100), manager=manager)
+    text_bullet_volume = font.render(f"Bullet volume", True, (100, 255, 100))
+    bullet_volume = font.render(f"{BULLET_VOLUME}", True, (100, 255, 100))
+    bullet = pygame_gui.elements.UIHorizontalSlider(relative_rect=pygame.Rect((750, 520), (250, 25)),
+                                           start_value=BULLET_VOLUME * 100, value_range=(0, 100), manager=manager)
+    text_health_volume = font.render(f"Health volume", True, (100, 255, 100))
+    health_volume = font.render(f"{HEALTH_VOLUME}", True, (100, 255, 100))
+    health = pygame_gui.elements.UIHorizontalSlider(relative_rect=pygame.Rect((750, 580), (250, 25)),
+                                           start_value=HEALTH_VOLUME * 100, value_range=(0, 100), manager=manager)
+    text_capture_volume = font.render(f"Capture volume", True, (100, 255, 100))
+    capture_volume = font.render(f"{CAPTURE_VOLUME}", True, (100, 255, 100))
+    capture = pygame_gui.elements.UIHorizontalSlider(relative_rect=pygame.Rect((750, 640), (250, 25)),
+                                           start_value=CAPTURE_VOLUME * 100, value_range=(0, 100), manager=manager)
+    clock = pygame.time.Clock()
+    while True:
+        time_delta = clock.tick(60) / 1000.0
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                terminate()
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    pass
+            elif event.type == pygame.USEREVENT:
+                if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
+                    if event.ui_element == come_back:
+                        start_menu()
+                elif event.user_type == pygame_gui.UI_HORIZONTAL_SLIDER_MOVED:
+                    if event.ui_element == music:
+                        MUSIC_VOLUME = music.get_current_value() // 1 / 100
+                        music_value = font.render(f"{MUSIC_VOLUME}", True, (100, 255, 100))
+                    elif event.ui_element == shot:
+                        SHOT_VOLUME = shot.get_current_value() // 1 / 100
+                        shot_volume = font.render(f"{SHOT_VOLUME}", True, (100, 255, 100))
+                    elif event.ui_element == bullet:
+                        BULLET_VOLUME = bullet.get_current_value() // 1 / 100
+                        bullet_volume = font.render(f"{BULLET_VOLUME}", True, (100, 255, 100))
+                    elif event.ui_element == health:
+                        HEALTH_VOLUME = health.get_current_value() // 1 / 100
+                        health_volume = font.render(f"{HEALTH_VOLUME}", True, (100, 255, 100))
+                    elif event.ui_element == capture:
+                        CAPTURE_VOLUME = capture.get_current_value() // 1 / 100
+                        capture_volume = font.render(f"{CAPTURE_VOLUME}", True, (100, 255, 100))
+            manager.process_events(event)
+        display.blit(image, (0, 0))
+        display.blit(text_music_value, (480, 400))
+        display.blit(text_capture_volume, (480, 640))
+        display.blit(text_health_volume, (480, 580))
+        display.blit(text_bullet_volume, (480, 520))
+        display.blit(text_shot_volume, (480, 460))
+        display.blit(music_value, (1010, 400))
+        display.blit(capture_volume, (1010, 640))
+        display.blit(health_volume, (1010, 580))
+        display.blit(bullet_volume, (1010, 520))
+        display.blit(shot_volume, (1010, 460))
+        manager.update(time_delta)
+        manager.draw_ui(display)
+        pygame.display.update()
 
 
 # пауза
@@ -521,7 +682,7 @@ def welcome_screen():
                 if event.key == pygame.K_ESCAPE:
                     terminate()
                 elif event.key == pygame.K_RETURN:
-                    main(1)
+                    start_menu()
         pygame.display.update()
 
 
