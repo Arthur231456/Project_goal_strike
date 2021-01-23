@@ -46,18 +46,23 @@ with open(f"{DATA_DIR}/{SETTINGS_FILES}/volumes.info") as t:
     a = list(map(lambda x: x.rstrip("\n"), t.readlines()))
     for i in a:
         VOLUMES[i.split(" = ")[0]] = float(i.split(" = ")[1])
-control = {'g': pygame.K_g,
-           'p': pygame.K_p,
-           'r': pygame.K_r,
-           'l': pygame.K_l,
-           'w': pygame.K_w,
-           's': pygame.K_s,
-           'a': pygame.K_a,
-           'd': pygame.K_d,
-           'up': pygame.K_UP,
-           'down': pygame.K_DOWN,
-           'left': pygame.K_LEFT,
-           'right': pygame.K_RIGHT}
+CONTROLS = {'g': 103,
+           'p': 112,
+           'r': 114,
+           'l': 108,
+           'w': 119,
+           's': 115,
+           'a': 97,
+           'd': 100,
+           'up': 1073741906,
+           'down': 1073741905,
+           'right': 1073741903,
+           'left': 1073741904}
+
+with open(f"{DATA_DIR}/{SETTINGS_FILES}/controls.info") as t:
+    a = list(map(lambda x: x.rstrip("\n"), t.readlines()))
+    for i in a:
+        CONTROLS[i.split(" = ")[0]] = int(i.split(" = ")[1])
 
 # события связанные с механикой игры
 SETHEALTHEVENT = pygame.USEREVENT + 1
@@ -402,29 +407,29 @@ def main(map):
                             i.empty()
                         pygame.mixer.quit()
                         pygame.register_quit(start_menu())
-                elif event.key == control['g']:
+                elif event.key == CONTROLS['g']:
                     b.shot()
-                elif event.key == control['p']:
+                elif event.key == CONTROLS['p']:
                     r.shot()
-                elif event.key == control['r']:
+                elif event.key == CONTROLS['r']:
                     b.reload_gun()
-                elif event.key == control['l']:
+                elif event.key == CONTROLS['l']:
                     r.reload_gun()
-                elif event.key == control['w']:
+                elif event.key == CONTROLS['w']:
                     move_list.append((0, -1, NORTH, event.key))
-                elif event.key == control['s']:
+                elif event.key == CONTROLS['s']:
                     move_list.append((0, 1, SOUTH, event.key))
-                elif event.key == control['a']:
+                elif event.key == CONTROLS['a']:
                     move_list.append((-1, 0, WEST, event.key))
-                elif event.key == control['d']:
+                elif event.key == CONTROLS['d']:
                     move_list.append((1, 0, EAST, event.key))
-                elif event.key == control['up']:
+                elif event.key == CONTROLS['up']:
                     move_list.append((0, -1, NORTH, event.key))
-                elif event.key == control['down']:
+                elif event.key == CONTROLS['down']:
                     move_list.append((0, 1, SOUTH, event.key))
-                elif event.key == control['left']:
+                elif event.key == CONTROLS['left']:
                     move_list.append((-1, 0, WEST, event.key))
-                elif event.key == control['right']:
+                elif event.key == CONTROLS['right']:
                     move_list.append((1, 0, EAST, event.key))
             elif event.type == SETHEALTHEVENT:
                 field.set_health()
@@ -641,7 +646,7 @@ def settings():
                         running = False
                         return True
                     elif event.ui_element == control:
-                        main(1)
+                        Control()
                     elif event.ui_element == volume:
                         Volume()
             manager.process_events(event)
@@ -662,29 +667,29 @@ def Volume():
     manager = pygame_gui.UIManager((W, H), f"{DATA_DIR}/{SETTINGS_FILES}/startmenu.json")
     come_back = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((700, 750), (300, 75)),
                                              text='Назад / Применить', manager=manager)
-    font = pygame.font.Font(None, 46)
-    text_music_value = font.render(f"Music volume", True, (255, 229, 180))
+    font = pygame.font.Font(None, 44)
+    text_music_value = font.render(f"Громкость музыки", True, (255, 229, 180))
     music_value = font.render(f"{VOLUMES['MUSIC_VOLUME']}", True, (255, 229, 180))
-    music = pygame_gui.elements.UIHorizontalSlider(relative_rect=pygame.Rect((750, 400), (250, 25)),
+    music = pygame_gui.elements.UIHorizontalSlider(relative_rect=pygame.Rect((780, 400), (250, 25)),
                                                    start_value=VOLUMES['MUSIC_VOLUME'] * 100, value_range=(0, 100),
                                                    manager=manager)
-    text_shot_volume = font.render(f"Shot volume", True, (255, 229, 180))
+    text_shot_volume = font.render(f"Громкость попадания", True, (255, 229, 180))
     shot_volume = font.render(f"{VOLUMES['SHOT_VOLUME']}", True, (255, 229, 180))
-    shot = pygame_gui.elements.UIHorizontalSlider(relative_rect=pygame.Rect((750, 460), (250, 25)),
+    shot = pygame_gui.elements.UIHorizontalSlider(relative_rect=pygame.Rect((780, 460), (250, 25)),
                                                   start_value=VOLUMES['SHOT_VOLUME'] * 100, value_range=(0, 100), manager=manager)
-    text_bullet_volume = font.render(f"Bullet volume", True, (255, 229, 180))
+    text_bullet_volume = font.render(f"Громкость выстрела", True, (255, 229, 180))
     bullet_volume = font.render(f"{VOLUMES['BULLET_VOLUME']}", True, (255, 229, 180))
-    bullet = pygame_gui.elements.UIHorizontalSlider(relative_rect=pygame.Rect((750, 520), (250, 25)),
+    bullet = pygame_gui.elements.UIHorizontalSlider(relative_rect=pygame.Rect((780, 520), (250, 25)),
                                                     start_value=VOLUMES['BULLET_VOLUME'] * 100, value_range=(0, 100),
                                                     manager=manager)
-    text_health_volume = font.render(f"Health volume", True, (255, 229, 180))
+    text_health_volume = font.render(f"Громкость здоровья", True, (255, 229, 180))
     health_volume = font.render(f"{VOLUMES['HEALTH_VOLUME']}", True, (255, 229, 180))
-    health = pygame_gui.elements.UIHorizontalSlider(relative_rect=pygame.Rect((750, 580), (250, 25)),
+    health = pygame_gui.elements.UIHorizontalSlider(relative_rect=pygame.Rect((780, 580), (250, 25)),
                                                     start_value=VOLUMES['HEALTH_VOLUME'] * 100, value_range=(0, 100),
                                                     manager=manager)
-    text_capture_volume = font.render(f"Capture volume", True, (255, 229, 180))
+    text_capture_volume = font.render(f"Громкость захввата", True, (255, 229, 180))
     capture_volume = font.render(f"{VOLUMES['CAPTURE_VOLUME']}", True, (255, 229, 180))
-    capture = pygame_gui.elements.UIHorizontalSlider(relative_rect=pygame.Rect((750, 640), (250, 25)),
+    capture = pygame_gui.elements.UIHorizontalSlider(relative_rect=pygame.Rect((780, 640), (250, 25)),
                                                      start_value=VOLUMES['CAPTURE_VOLUME'] * 100, value_range=(0, 100),
                                                      manager=manager)
     clock = pygame.time.Clock()
@@ -728,16 +733,241 @@ def Volume():
                             t.write(f"{vol} = {VOLUMES[vol]}\n")
             manager.process_events(event)
         display.blit(image, (0, 0))
-        display.blit(text_music_value, (480, 400))
-        display.blit(text_capture_volume, (480, 640))
-        display.blit(text_health_volume, (480, 580))
-        display.blit(text_bullet_volume, (480, 520))
-        display.blit(text_shot_volume, (480, 460))
-        display.blit(music_value, (1010, 400))
-        display.blit(capture_volume, (1010, 640))
-        display.blit(health_volume, (1010, 580))
-        display.blit(bullet_volume, (1010, 520))
-        display.blit(shot_volume, (1010, 460))
+        display.blit(text_music_value, (440, 400))
+        display.blit(text_capture_volume, (440, 640))
+        display.blit(text_health_volume, (440, 580))
+        display.blit(text_bullet_volume, (440, 520))
+        display.blit(text_shot_volume, (440, 460))
+        display.blit(music_value, (1030, 400))
+        display.blit(capture_volume, (1030, 640))
+        display.blit(health_volume, (1030, 580))
+        display.blit(bullet_volume, (1030, 520))
+        display.blit(shot_volume, (1030, 460))
+        manager.update(time_delta)
+        manager.draw_ui(display)
+        sprites.draw(display)
+        pygame.display.update()
+
+
+def ke(q):
+    if q == 1073741906:
+        return 'up'
+    elif q == 1073741905:
+        return 'down'
+    elif q == 1073741904:
+        return 'right'
+    elif q == 1073741903:
+        return 'left'
+    else:
+        return chr(q)
+
+
+def Control():
+    global CONTROLS
+    pygame.init()
+    display = pygame.display.set_mode((W, H), pygame.FULLSCREEN | pygame.DOUBLEBUF)
+    image = load_image(f"{DATA_DIR}/{PATTERNS_DIR}/start.png")
+    display.blit(image, (0, 0))
+    manager = pygame_gui.UIManager((W, H), f"{DATA_DIR}/{SETTINGS_FILES}/startmenu.json")
+    come_back = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((700, 750), (300, 75)),
+                                             text='Назад / Применить', manager=manager)
+    font = pygame.font.Font(None, 46)
+    text_shotb = font.render(f"Выстрел г", True, (255, 229, 180))
+    L_shotb = font.render(f"{ke(CONTROLS['g'])}", True, (255, 229, 180))
+    shotb = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((750, 370), (50, 50)),
+                                         text="", manager=manager)
+    g = 0
+    text_shotr = font.render(f"Выстрел к", True, (255, 229, 180))
+    L_shotr = font.render(f"{ke(CONTROLS['p'])}", True, (255, 229, 180))
+    shotr = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((1250, 370), (50, 50)),
+                                         text="", manager=manager)
+    p = 0
+    text_cdb = font.render(f"Перезарядка г", True, (255, 229, 180))
+    L_cdb = font.render(f"{ke(CONTROLS['r'])}", True, (255, 229, 180))
+    cdb = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((750, 430), (50, 50)),
+                                          text="", manager=manager)
+    r = 0
+    text_cdr = font.render(f"Перезарядка к", True, (255, 229, 180))
+    L_cdr = font.render(f"{ke(CONTROLS['l'])}", True, (255, 229, 180))
+    cdr = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((1250, 430), (50, 50)),
+                                          text="", manager=manager)
+    l = 0
+    text_upb = font.render(f"Вперёд г", True, (255, 229, 180))
+    L_upb = font.render(f"{ke(CONTROLS['w'])}", True, (255, 229, 180))
+    upb = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((750, 490), (50, 50)),
+                                            text="", manager=manager)
+    w = 0
+    text_upr = font.render(f"Вперёд к", True, (255, 229, 180))
+    L_upr = font.render(f"{ke(CONTROLS['up'])}", True, (255, 229, 180))
+    upr = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((1250, 490), (50, 50)),
+                                            text="", manager=manager)
+    up = 0
+    text_downb = font.render(f"Назад г", True, (255, 229, 180))
+    L_downb = font.render(f"{ke(CONTROLS['s'])}", True, (255, 229, 180))
+    downb = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((750, 550), (50, 50)),
+                                            text="", manager=manager)
+    s = 0
+    text_downr = font.render(f"Назад к", True, (255, 229, 180))
+    L_downr = font.render(f"{ke(CONTROLS['down'])}", True, (255, 229, 180))
+    downr = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((1250, 550), (50, 50)),
+                                            text="", manager=manager)
+    down = 0
+    text_rightb = font.render(f"Вправо г", True, (255, 229, 180))
+    L_rightb = font.render(f"{ke(CONTROLS['a'])}", True, (255, 229, 180))
+    rightb = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((750, 610), (50, 50)),
+                                            text="", manager=manager)
+    a = 0
+    text_rightr = font.render(f"Вправо к", True, (255, 229, 180))
+    L_rightr = font.render(f"{ke(CONTROLS['right'])}", True, (255, 229, 180))
+    rightr = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((1250, 610), (50, 50)),
+                                            text="", manager=manager)
+    right = 0
+    text_leftb = font.render(f"Влево г", True, (255, 229, 180))
+    L_leftb = font.render(f"{ke(CONTROLS['d'])}", True, (255, 229, 180))
+    leftb = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((750, 670), (50, 50)),
+                                            text="", manager=manager)
+    d = 0
+    text_leftr = font.render(f"Влево к", True, (255, 229, 180))
+    L_leftr = font.render(f"{ke(CONTROLS['left'])}", True, (255, 229, 180))
+    leftr = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((1250, 670), (50, 50)),
+                                            text="", manager=manager)
+    left = 0
+    clock = pygame.time.Clock()
+    running = True
+    while running:
+        cursor.rect.x, cursor.rect.y = pygame.mouse.get_pos()
+        cursor.rect.x -= 11
+        cursor.rect.y -= 11
+        time_delta = clock.tick(60) / 1000.0
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                terminate()
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    pass
+                else:
+                    if g == 1:
+                        CONTROLS['g'] = event.key
+                        L_shotb = font.render(f"{ke(CONTROLS['g'])}", True, (255, 229, 180))
+                    elif p == 1:
+                        CONTROLS['p'] = event.key
+                        L_shotr = font.render(f"{ke(CONTROLS['p'])}", True, (255, 229, 180))
+                    elif r == 1:
+                        CONTROLS['r'] = event.key
+                        L_cdb = font.render(f"{ke(CONTROLS['r'])}", True, (255, 229, 180))
+                    elif l == 1:
+                        CONTROLS['l'] = event.key
+                        L_cdr = font.render(f"{ke(CONTROLS['l'])}", True, (255, 229, 180))
+                    elif w == 1:
+                        CONTROLS['w'] = event.key
+                        L_upb = font.render(f"{ke(CONTROLS['w'])}", True, (255, 229, 180))
+                    elif s == 1:
+                        CONTROLS['s'] = event.key
+                        L_downb = font.render(f"{ke(CONTROLS['s'])}", True, (255, 229, 180))
+                    elif a == 1:
+                        CONTROLS['a'] = event.key
+                        L_rightb = font.render(f"{ke(CONTROLS['a'])}", True, (255, 229, 180))
+                    elif d == 1:
+                        CONTROLS['d'] = event.key
+                        L_leftb = font.render(f"{ke(CONTROLS['d'])}", True, (255, 229, 180))
+                    elif up == 1:
+                        CONTROLS['up'] = event.key
+                        L_upr = font.render(f"{ke(CONTROLS['up'])}", True, (255, 229, 180))
+                    elif down == 1:
+                        CONTROLS['down'] = event.key
+                        L_downr = font.render(f"{ke(CONTROLS['down'])}", True, (255, 229, 180))
+                    elif right == 1:
+                        CONTROLS['right'] = event.key
+                        L_rightr = font.render(f"{ke(CONTROLS['right'])}", True, (255, 229, 180))
+                    elif left == 1:
+                        CONTROLS['left'] = event.key
+                        L_leftr = font.render(f"{ke(CONTROLS['left'])}", True, (255, 229, 180))
+                    with open(f"{DATA_DIR}/{SETTINGS_FILES}/controls.info", "w") as r:
+                        for con in CONTROLS:
+                            r.write(f"{con} = {CONTROLS[con]}\n")
+            elif event.type == pygame.USEREVENT:
+                if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
+                    if event.ui_element == come_back:
+                        display.fill((0, 0, 0))
+                        display.blit(image, (0, 0))
+                        running = False
+                        return True
+                elif event.user_type == pygame_gui.UI_BUTTON_ON_HOVERED:
+                    if event.ui_element == shotb:
+                        g = 1
+                    elif event.ui_element == shotr:
+                        p = 1
+                    elif event.ui_element == cdb:
+                        r = 1
+                    elif event.ui_element == cdr:
+                        l = 1
+                    elif event.ui_element == upb:
+                        w = 1
+                    elif event.ui_element == downb:
+                        s = 1
+                    elif event.ui_element == rightb:
+                        a = 1
+                    elif event.ui_element == leftb:
+                        d = 1
+                    elif event.ui_element == upr:
+                        up = 1
+                    elif event.ui_element == downr:
+                        down = 1
+                    elif event.ui_element == rightr:
+                        right = 1
+                    elif event.ui_element == leftr:
+                        left = 1
+                elif event.user_type == pygame_gui.UI_BUTTON_ON_UNHOVERED:
+                    if event.ui_element == shotb:
+                        g = 0
+                    elif event.ui_element == shotr:
+                        p = 0
+                    elif event.ui_element == cdb:
+                        r = 0
+                    elif event.ui_element == cdr:
+                        l = 0
+                    elif event.ui_element == upb:
+                        w = 0
+                    elif event.ui_element == downb:
+                        s = 0
+                    elif event.ui_element == rightb:
+                        a = 0
+                    elif event.ui_element == leftb:
+                        d = 0
+                    elif event.ui_element == upr:
+                        up = 0
+                    elif event.ui_element == downr:
+                        down = 0
+                    elif event.ui_element == rightr:
+                        right = 0
+                    elif event.ui_element == leftr:
+                        left = 0
+            manager.process_events(event)
+        display.blit(image, (0, 0))
+        display.blit(text_shotb, (350, 370))
+        display.blit(text_shotr, (850, 370))
+        display.blit(text_cdb, (350, 430))
+        display.blit(text_cdr, (850, 430))
+        display.blit(text_upb, (350, 490))
+        display.blit(text_upr, (850, 490))
+        display.blit(text_downb, (350, 550))
+        display.blit(text_downr, (850, 550))
+        display.blit(text_rightb, (350, 610))
+        display.blit(text_rightr, (850, 610))
+        display.blit(text_leftb, (350, 670))
+        display.blit(text_leftr, (850, 670))
+        display.blit(L_shotb, (650, 370))
+        display.blit(L_shotr, (1150, 370))
+        display.blit(L_cdb, (650, 430))
+        display.blit(L_cdr, (1150, 430))
+        display.blit(L_upb, (650, 490))
+        display.blit(L_upr, (1150, 490))
+        display.blit(L_downb, (650, 550))
+        display.blit(L_downr, (1150, 550))
+        display.blit(L_rightb, (650, 610))
+        display.blit(L_rightr, (1150, 610))
+        display.blit(L_leftb, (650, 670))
+        display.blit(L_leftr, (1150, 670))
         manager.update(time_delta)
         manager.draw_ui(display)
         sprites.draw(display)
