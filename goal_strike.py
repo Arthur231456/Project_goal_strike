@@ -11,7 +11,6 @@ EAST = 0
 NORTH = 1
 WEST = 2
 SOUTH = 3
-W = pygame.K_q
 
 # размеры
 BAR_HEIGHT = 30
@@ -74,6 +73,16 @@ health_box = pygame.sprite.Group()
 capture_points = pygame.sprite.Group()
 bullets_box = pygame.sprite.Group()
 groups = [all_sprites, players, bullets, map_objects, health_box, capture_points, bullets_box]
+pygame.init()
+pygame.mouse.set_visible(False)
+sprites = pygame.sprite.Group()
+cursor = pygame.sprite.Sprite(sprites)
+cursor.image = pygame.image.load(f"{DATA_DIR}/re/crosshair.png")
+cursor.rect = cursor.image.get_rect()
+sprites.add(cursor)
+cursor.rect.x, cursor.rect.y = 0, 0
+if pygame.mouse.get_focused():
+    cursor.rect.x, cursor.rect.y = pygame.mouse.get_pos()
 
 
 # функция загрузки изображения
@@ -380,6 +389,9 @@ def main(map):
     display.blit(bar, (0, 0))
     running = True
     while running:
+        cursor.rect.x, cursor.rect.y = pygame.mouse.get_pos()
+        cursor.rect.x -= 11
+        cursor.rect.y -= 11
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 terminate()
@@ -455,6 +467,7 @@ def main(map):
         tm += 1000 / FPS
         bar.update(int(tm), map)
         display.blit(bar, (0, 0))
+        sprites.draw(display)
         pygame.display.update()
         clock.tick(FPS)
 
@@ -566,6 +579,9 @@ def start_menu():
     # image = load_image(f"{DATA_DIR}/{PATTERNS_DIR}/settings.jpg")
     clock = pygame.time.Clock()
     while True:
+        cursor.rect.x, cursor.rect.y = pygame.mouse.get_pos()
+        cursor.rect.x -= 11
+        cursor.rect.y -= 11
         time_delta = clock.tick(60) / 1000.0
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -584,8 +600,11 @@ def start_menu():
                     elif event.ui_element == mode2:
                         main(2)
             manager.process_events(event)
+        display.fill((0, 0, 0))
+        display.blit(image, (0, 0))
         manager.update(time_delta)
         manager.draw_ui(display)
+        sprites.draw(display)
         pygame.display.update()
 
 
@@ -604,6 +623,9 @@ def settings():
     clock = pygame.time.Clock()
     running = True
     while running:
+        cursor.rect.x, cursor.rect.y = pygame.mouse.get_pos()
+        cursor.rect.x -= 11
+        cursor.rect.y -= 11
         time_delta = clock.tick(60) / 1000.0
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -623,8 +645,11 @@ def settings():
                     elif event.ui_element == volume:
                         Volume()
             manager.process_events(event)
+        display.fill((0, 0, 0))
+        display.blit(image, (0, 0))
         manager.update(time_delta)
         manager.draw_ui(display)
+        sprites.draw(display)
         pygame.display.update()
 
 
@@ -665,6 +690,9 @@ def Volume():
     clock = pygame.time.Clock()
     running = True
     while running:
+        cursor.rect.x, cursor.rect.y = pygame.mouse.get_pos()
+        cursor.rect.x -= 11
+        cursor.rect.y -= 11
         time_delta = clock.tick(60) / 1000.0
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -695,13 +723,10 @@ def Volume():
                     elif event.ui_element == capture:
                         VOLUMES['CAPTURE_VOLUME'] = capture.get_current_value() // 1 / 100
                         capture_volume = font.render(f"{VOLUMES['CAPTURE_VOLUME']}", True, (255, 229, 180))
-                    with open(f"{DATA_DIR}/sounds/volumes.info", "w") as t:
+                    with open(f"{DATA_DIR}/{SETTINGS_FILES}/volumes.info", "w") as t:
                         for vol in VOLUMES:
                             t.write(f"{vol} = {VOLUMES[vol]}\n")
             manager.process_events(event)
-        snd = pygame.mixer.Sound(f"{DATA_DIR}/sounds/music.wav")
-        snd.set_volume(VOLUMES["MUSIC_VOLUME"])
-        pygame.mixer.Channel(music_channel).play(snd)
         display.blit(image, (0, 0))
         display.blit(text_music_value, (480, 400))
         display.blit(text_capture_volume, (480, 640))
@@ -715,6 +740,7 @@ def Volume():
         display.blit(shot_volume, (1010, 460))
         manager.update(time_delta)
         manager.draw_ui(display)
+        sprites.draw(display)
         pygame.display.update()
 
 
@@ -732,7 +758,13 @@ def paused(display, bar, field):
     open_settings = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((W // 2 - 140, H // 2), (280, 30)),
                                                  text='Настройки', manager=manager)
     running = True
+    pygame.mouse.set_pos(W // 2 - 160, H // 2 - 90)
     while running:
+        if pygame.mouse.get_pos()[0] in range(W // 2 - 160, W // 2 + 160)\
+                and pygame.mouse.get_pos()[1] in range(H // 2 - 90, H // 2 + 90):
+            cursor.rect.x, cursor.rect.y = pygame.mouse.get_pos()
+            cursor.rect.x -= 11
+            cursor.rect.y -= 11
         for event in pygame.event.get():
             if event.type == pygame.USEREVENT:
                 if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
@@ -751,10 +783,28 @@ def paused(display, bar, field):
                         bar.update(pygame.time.get_ticks(), map)
                         display.blit(bar, (0, 0))
                         pygame.display.update()
+                        snd = pygame.mixer.Sound(f"{DATA_DIR}/sounds/music.wav")
+                        snd.set_volume(VOLUMES["MUSIC_VOLUME"])
+                        pygame.mixer.Channel(music_channel).play(snd)
             manager.process_events(event)
+        if pygame.mouse.get_pos()[0] < W // 2 - 149:
+            pygame.mouse.set_pos(W // 2 - 149, pygame.mouse.get_pos()[1])
+        if pygame.mouse.get_pos()[0] > W // 2 + 149:
+            pygame.mouse.set_pos(W // 2 + 149, pygame.mouse.get_pos()[1])
+        if pygame.mouse.get_pos()[1] < H // 2 - 79:
+            pygame.mouse.set_pos(pygame.mouse.get_pos()[0], H // 2 - 79)
+        if pygame.mouse.get_pos()[1] > H // 2 + 79:
+            pygame.mouse.set_pos(pygame.mouse.get_pos()[0], H // 2 + 79)
+        display.fill((0, 0, 0))
+        map_objects.draw(display)
+        field.render(display)
+        all_sprites.update()
+        all_sprites.draw(display)
+        display.blit(bar, (0, 0))
         display.blit(background, (W // 2 - 160, H // 2 - 90))
         manager.draw_ui(display)
         manager.update(time_delta)
+        sprites.draw(display)
         pygame.display.update()
 
 
@@ -777,6 +827,9 @@ def welcome_screen():
     display.blit(t, (1400, 870))
     display.blit(t1, (1400, 850))
     while True:
+        cursor.rect.x, cursor.rect.y = pygame.mouse.get_pos()
+        cursor.rect.x -= 11
+        cursor.rect.y -= 11
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 terminate()
@@ -785,6 +838,11 @@ def welcome_screen():
                     terminate()
                 elif event.key == pygame.K_RETURN:
                     start_menu()
+        display.fill((0, 0, 0))
+        display.blit(image, (0, 0))
+        display.blit(t, (1400, 870))
+        display.blit(t1, (1400, 850))
+        sprites.draw(display)
         pygame.display.update()
 
 
