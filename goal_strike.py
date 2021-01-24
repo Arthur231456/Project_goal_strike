@@ -364,7 +364,7 @@ def main(map):
                     r = False
     tm = 0
     pygame.time.set_timer(SETHEALTHEVENT, 20000)
-    pygame.time.set_timer(SETHEALTHEVENT, 30000)
+    pygame.time.set_timer(SETBULLETEVENT, 25000)
     if map == 1:
         pygame.time.set_timer(GAMEENDEVENT, 150000)
     clock = pygame.time.Clock()
@@ -485,19 +485,19 @@ def win(display, bar, field, b, r, map):
         if b == r:
             c = 'Ничья'
         elif b > r:
-            c = 'Выиграл Голубой'
+            c = 'Выиграл Синий'
         else:
             c = 'Выиграл Красный'
-        winner = (f"Здоровье голубого {b}", f"Здоровье красного {r}", c)
+        winner = (False, c)
     else:
         br = [i for i in players]
         if br[0].score == br[1].score:
             c = 'Ничья'
         elif br[0].score > br[1].score:
-            c = 'Выиграл Голубой'
+            c = 'Выиграл Синий'
         else:
             c = 'Выиграл Красный'
-        winner = (f"Счет голубого {br[0].score}", f"Счет красного {br[1].score}", c)
+        winner = (f"Счет синего {br[0].score}", f"Счет красного {br[1].score}", c)
     for i in groups:
         i.empty()
     if end(display, bar, field, winner) is True:
@@ -614,7 +614,6 @@ def start_menu():
                                          text='Захват точек', manager=manager)
     mode2 = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((W // 2 + 10, 500), (300, 75)),
                                          text='Быстрая игра', manager=manager)
-    # image = load_image(f"{DATA_DIR}/{PATTERNS_DIR}/settings.jpg")
     clock = pygame.time.Clock()
     while True:
         cursor.rect.x, cursor.rect.y = pygame.mouse.get_pos()
@@ -792,13 +791,13 @@ def Volume():
 
 # функция определения кнопки по её коду
 def ke(q):
-    if q == 1073741906:
+    if q == 273:
         return 'up'
-    elif q == 1073741905:
+    elif q == 274:
         return 'down'
-    elif q == 1073741903:
+    elif q == 275:
         return 'right'
-    elif q == 1073741904:
+    elif q == 276:
         return 'left'
     else:
         return chr(q)
@@ -807,6 +806,8 @@ def ke(q):
 # окно настройки управления
 def Control():
     global CONTROLS
+    imb = load_image(f"{DATA_DIR}/{PATTERNS_DIR}/b.jpg")
+    imr = load_image(f"{DATA_DIR}/{PATTERNS_DIR}/r.jpg")
     pygame.init()
     display = pygame.display.set_mode((W, H), pygame.FULLSCREEN | pygame.DOUBLEBUF)
     image = load_image(f"{DATA_DIR}/{PATTERNS_DIR}/start.png")
@@ -815,7 +816,7 @@ def Control():
     come_back = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((700, 750), (300, 75)),
                                              text='Назад / Применить', manager=manager)
     font = pygame.font.Font(None, 46)
-    text_shotb = font.render(f"Выстрел г", True, (255, 229, 180))
+    text_shotb = font.render(f"Выстрел с", True, (255, 229, 180))
     L_shotb = font.render(f"{ke(CONTROLS['g'])}", True, (255, 229, 180))
     shotb = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((750, 370), (50, 50)),
                                          text="", manager=manager)
@@ -825,7 +826,7 @@ def Control():
     shotr = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((1250, 370), (50, 50)),
                                          text="", manager=manager)
     p = 0
-    text_cdb = font.render(f"Перезарядка г", True, (255, 229, 180))
+    text_cdb = font.render(f"Перезарядка с", True, (255, 229, 180))
     L_cdb = font.render(f"{ke(CONTROLS['r'])}", True, (255, 229, 180))
     cdb = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((750, 430), (50, 50)),
                                           text="", manager=manager)
@@ -835,7 +836,7 @@ def Control():
     cdr = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((1250, 430), (50, 50)),
                                           text="", manager=manager)
     l = 0
-    text_upb = font.render(f"Вперёд г", True, (255, 229, 180))
+    text_upb = font.render(f"Вперёд с", True, (255, 229, 180))
     L_upb = font.render(f"{ke(CONTROLS['w'])}", True, (255, 229, 180))
     upb = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((750, 490), (50, 50)),
                                             text="", manager=manager)
@@ -845,7 +846,7 @@ def Control():
     upr = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((1250, 490), (50, 50)),
                                             text="", manager=manager)
     up = 0
-    text_downb = font.render(f"Назад г", True, (255, 229, 180))
+    text_downb = font.render(f"Назад с", True, (255, 229, 180))
     L_downb = font.render(f"{ke(CONTROLS['s'])}", True, (255, 229, 180))
     downb = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((750, 550), (50, 50)),
                                             text="", manager=manager)
@@ -855,7 +856,7 @@ def Control():
     downr = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((1250, 550), (50, 50)),
                                             text="", manager=manager)
     down = 0
-    text_rightb = font.render(f"Вправо г", True, (255, 229, 180))
+    text_rightb = font.render(f"Вправо с", True, (255, 229, 180))
     L_rightb = font.render(f"{ke(CONTROLS['d'])}", True, (255, 229, 180))
     rightb = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((750, 610), (50, 50)),
                                             text="", manager=manager)
@@ -865,7 +866,7 @@ def Control():
     rightr = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((1250, 610), (50, 50)),
                                             text="", manager=manager)
     right = 0
-    text_leftb = font.render(f"Влево г", True, (255, 229, 180))
+    text_leftb = font.render(f"Влево с", True, (255, 229, 180))
     L_leftb = font.render(f"{ke(CONTROLS['a'])}", True, (255, 229, 180))
     leftb = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((750, 670), (50, 50)),
                                             text="", manager=manager)
@@ -875,6 +876,8 @@ def Control():
     leftr = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((1250, 670), (50, 50)),
                                             text="", manager=manager)
     left = 0
+    bb = [shotb, cdb, upb, downb, rightb, leftb]
+    rb = [shotr, cdr, upr, downr, rightr, leftr]
     clock = pygame.time.Clock()
     running = True
     while running:
@@ -939,6 +942,10 @@ def Control():
                         running = False
                         return True
                 elif event.user_type == pygame_gui.UI_BUTTON_ON_HOVERED:
+                    if event.ui_element in bb:
+                        event.ui_element.set_image(imb)
+                    elif event.ui_element in rb:
+                        event.ui_element.set_image(imr)
                     if event.ui_element == shotb:
                         g = 1
                     elif event.ui_element == shotr:
@@ -1022,30 +1029,35 @@ def Control():
 
 # окончание игры, здесь окошко с конечным счетом или надписью имени победителя
 # запускается при срабатывании GAMEENDEVENT в основном цикле
+
 def end(display, bar, field, winner):
     clock = pygame.time.Clock()
-    background = pygame.Surface((550, 300))
+    background = pygame.Surface((540, 300))
     background.fill((255, 229, 180))
     time_delta = clock.tick(FPS) / 1000.0
-    manager = pygame_gui.UIManager((W, H), f"{DATA_DIR}/{SETTINGS_FILES}/set.json")
-    font = pygame.font.Font(None, 46)
-    scoreb0 = font.render(winner[0].split()[0].rjust(7, ' '), True, (0, 191, 255))
-    scoreb1 = font.render(winner[0].split()[1], True, (0, 191, 255))
-    scoreb2 = font.render(winner[0].split()[2], True, (0, 191, 255))
-    scorer0 = font.render(winner[1].split()[0].rjust(7, ' '), True, (220, 20, 60))
-    scorer1 = font.render(winner[1].split()[1], True, (220, 20, 60))
-    scorer2 = font.render(winner[1].split()[2], True, (220, 20, 60))
+    manager = pygame_gui.UIManager((W, H), f"{DATA_DIR}/{SETTINGS_FILES}/startmenu.json")
+    font = pygame.font.Font(None, 30)
+    scoreb0 = font.render("", True, (0, 90, 109))
+    scoreb1 = font.render("", True, (0, 90, 109))
+    scoreb2 = font.render("", True, (0, 90, 109))
+    scorer0 = font.render("", True, (220, 20, 60))
+    scorer1 = font.render("", True, (220, 20, 60))
+    scorer2 = font.render("", True, (220, 20, 60))
     font1 = pygame.font.Font(None, 60)
-    if winner[2] == 'Выиграл Голубой':
-        color = (0, 191, 255)
-    elif winner[2] == 'Выиграл Красный':
+    wd = font1.size(winner[-1])[0]
+    if winner[0]:
+        scoreb0 = font.render(winner[0].split()[0].rjust(7, ' '), True, (0, 90, 109))
+        scoreb1 = font.render(winner[0].split()[1] + ":", True, (0, 90, 109))
+        scoreb2 = font.render(winner[0].split()[2], True, (0, 90, 109))
+        scorer0 = font.render(winner[1].split()[0].rjust(7, ' '), True, (220, 20, 60))
+        scorer1 = font.render(winner[1].split()[1] + ":", True, (220, 20, 60))
+        scorer2 = font.render(winner[1].split()[2], True, (220, 20, 60))
+    color = (180, 180, 180)
+    if winner[-1] == 'Выиграл Синий':
+        color = (0, 90, 109)
+    elif winner[-1] == 'Выиграл Красный':
         color = (220, 20, 60)
-    if len(winner[2].split()) == 2:
-        win0 = font1.render(winner[2].split()[0], True, color)
-        win1 = font1.render(winner[2].split()[1], True, color)
-    else:
-        win0 = font1.render(winner[2].split()[0], True, (192, 192, 192))
-        win1 = False
+    win = font1.render(winner[-1], True, color)
     resume_game = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((W // 2 - 250, H // 2 + 50), (200, 50)),
                                                text='Реванш', manager=manager)
     exit_button = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((W // 2 + 50, H // 2 + 50), (200, 50)),
@@ -1083,15 +1095,13 @@ def end(display, bar, field, winner):
         all_sprites.draw(display)
         display.blit(bar, (0, 0))
         display.blit(background, (W // 2 - 275, H // 2 - 170))
-        display.blit(scoreb0, (W // 2 - 250, H // 2 - 140))
-        display.blit(scoreb1, (W // 2 - 245, H // 2 - 100))
-        display.blit(scoreb2, (W // 2 - 185, H // 2 - 60))
-        display.blit(scorer0, (W // 2 + 100, H // 2 - 140))
-        display.blit(scorer1, (W // 2 + 105, H // 2 - 100))
-        display.blit(scorer2, (W // 2 + 165, H // 2 - 60))
-        display.blit(win0, (W // 2 - 100, H // 2 - 50))
-        if win1 is not False:
-            display.blit(win1, (W // 2 - 100, H // 2))
+        display.blit(scoreb0, (W // 2 - 270, H // 2 - 140))
+        display.blit(scoreb1, (W // 2 - 200, H // 2 - 140))
+        display.blit(scoreb2, (W // 2 - 200, H // 2 - 110))
+        display.blit(scorer0, (W // 2 + 80, H // 2 - 140))
+        display.blit(scorer1, (W // 2 + 150, H // 2 - 140))
+        display.blit(scorer2, (W // 2 + 150, H // 2 - 110))
+        display.blit(win, (W // 2 - wd // 2, H // 2 - 50))
         manager.draw_ui(display)
         manager.update(time_delta)
         sprites.draw(display)
