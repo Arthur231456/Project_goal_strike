@@ -46,6 +46,8 @@ with open(f"{DATA_DIR}/{SETTINGS_FILES}/volumes.info") as t:
     a = list(map(lambda x: x.rstrip("\n"), t.readlines()))
     for i in a:
         VOLUMES[i.split(" = ")[0]] = float(i.split(" = ")[1])
+
+# загрузка управления
 CONTROLS = {'g': 103,
            'p': 112,
            'r': 114,
@@ -58,7 +60,6 @@ CONTROLS = {'g': 103,
            'down': 1073741905,
            'right': 1073741903,
            'left': 1073741904}
-
 with open(f"{DATA_DIR}/{SETTINGS_FILES}/controls.info") as t:
     a = list(map(lambda x: x.rstrip("\n"), t.readlines()))
     for i in a:
@@ -443,15 +444,16 @@ def main(map):
             elif event.type == SETBULLETEVENT:
                 field.set_bullets()
             elif event.type == GAMEENDEVENT:
-                end()
-                terminate()
+                win(display, bar, field, b.health, r.health, map)
             elif event.type == pygame.KEYUP and event.key not in [pygame.K_g, pygame.K_p]:
                 move_list = list(filter(lambda x: x[-1] != event.key, move_list))
         for i in move_list:
-            if i[3] in [pygame.K_w, pygame.K_d, pygame.K_a, pygame.K_s]:
+            if i[3] in [CONTROLS['w'], CONTROLS['s'], CONTROLS['a'], CONTROLS['d']]:
                 b.move(*i[:-1])
-            elif i[3] in [pygame.K_UP, pygame.K_DOWN, pygame.K_LEFT, pygame.K_RIGHT]:
+            elif i[3] in [CONTROLS['up'], CONTROLS['down'], CONTROLS['left'], CONTROLS['right']]:
                 r.move(*i[:-1])
+        if (b.health == 0 or r.health == 0) and (map != 1):
+            win(display, bar, field, b.health, r.health, map)
         display.fill((0, 0, 0))
         map_objects.draw(display)
         field.render(display)
@@ -477,7 +479,37 @@ def main(map):
         clock.tick(FPS)
 
 
-class Top_bar(pygame.Surface):  # класс верхней информационной панели
+# функция определения победителя и вызова функции конца
+def win(display, bar, field, b, r, map):
+    if map == 2:
+        if b == r:
+            c = 'Ничья'
+        elif b > r:
+            c = 'Выиграл Голубой'
+        else:
+            c = 'Выиграл Красный'
+        winner = (f"Здоровье голубого {b}", f"Здоровье красного {r}", c)
+    else:
+        br = [i for i in players]
+        if br[0].score == br[1].score:
+            c = 'Ничья'
+        elif br[0].score > br[1].score:
+            c = 'Выиграл Голубой'
+        else:
+            c = 'Выиграл Красный'
+        winner = (f"Счет голубого {br[0].score}", f"Счет красного {br[1].score}", c)
+    for i in groups:
+        i.empty()
+    if end(display, bar, field, winner) is True:
+        pygame.mixer.quit()
+        pygame.register_quit(main(map))
+    else:
+        pygame.mixer.quit()
+        pygame.register_quit(start_menu())
+
+
+# класс верхней информационной панели
+class Top_bar(pygame.Surface):
     def __init__(self, *size):
         super().__init__(*size)
         self.fill((255, 229, 180))
@@ -543,7 +575,8 @@ class Top_bar(pygame.Surface):  # класс верхней информацио
             self.health.append(player[i])
 
 
-class CapturePoints(pygame.sprite.Sprite):  # класс точек захвата
+# класс точек захвата
+class CapturePoints(pygame.sprite.Sprite):
     img = load_image(f"{DATA_DIR}/{PATTERNS_DIR}/free_place.jpg")
     red = load_image(f"{DATA_DIR}/{PATTERNS_DIR}/place2.jpg")
     blue = load_image(f"{DATA_DIR}/{PATTERNS_DIR}/place1.jpg")
@@ -564,7 +597,7 @@ class CapturePoints(pygame.sprite.Sprite):  # класс точек захват
         self.image = eval(f"CapturePoints.{player.color}")
 
 
-# начальный экран
+# меню
 def start_menu():
     pygame.init()
     display = pygame.display.set_mode((W, H), pygame.FULLSCREEN | pygame.DOUBLEBUF)
@@ -613,6 +646,7 @@ def start_menu():
         pygame.display.update()
 
 
+# функция настроек
 def settings():
     pygame.init()
     display = pygame.display.set_mode((W, H), pygame.FULLSCREEN | pygame.DOUBLEBUF)
@@ -637,7 +671,10 @@ def settings():
                 terminate()
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
-                    pass
+                    display.fill((0, 0, 0))
+                    display.blit(image, (0, 0))
+                    running = False
+                    return True
             elif event.type == pygame.USEREVENT:
                 if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
                     if event.ui_element == come_back:
@@ -658,6 +695,7 @@ def settings():
         pygame.display.update()
 
 
+# функция настройки звука
 def Volume():
     global VOLUMES
     pygame.init()
@@ -704,7 +742,10 @@ def Volume():
                 terminate()
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
-                    pass
+                    display.fill((0, 0, 0))
+                    display.blit(image, (0, 0))
+                    running = False
+                    return True
             elif event.type == pygame.USEREVENT:
                 if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
                     if event.ui_element == come_back:
@@ -749,19 +790,21 @@ def Volume():
         pygame.display.update()
 
 
+# функция определения кнопки по её коду
 def ke(q):
     if q == 1073741906:
         return 'up'
     elif q == 1073741905:
         return 'down'
-    elif q == 1073741904:
-        return 'right'
     elif q == 1073741903:
+        return 'right'
+    elif q == 1073741904:
         return 'left'
     else:
         return chr(q)
 
 
+# окно настройки управления
 def Control():
     global CONTROLS
     pygame.init()
@@ -813,7 +856,7 @@ def Control():
                                             text="", manager=manager)
     down = 0
     text_rightb = font.render(f"Вправо г", True, (255, 229, 180))
-    L_rightb = font.render(f"{ke(CONTROLS['a'])}", True, (255, 229, 180))
+    L_rightb = font.render(f"{ke(CONTROLS['d'])}", True, (255, 229, 180))
     rightb = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((750, 610), (50, 50)),
                                             text="", manager=manager)
     a = 0
@@ -823,7 +866,7 @@ def Control():
                                             text="", manager=manager)
     right = 0
     text_leftb = font.render(f"Влево г", True, (255, 229, 180))
-    L_leftb = font.render(f"{ke(CONTROLS['d'])}", True, (255, 229, 180))
+    L_leftb = font.render(f"{ke(CONTROLS['a'])}", True, (255, 229, 180))
     leftb = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((750, 670), (50, 50)),
                                             text="", manager=manager)
     d = 0
@@ -844,7 +887,10 @@ def Control():
                 terminate()
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
-                    pass
+                    display.fill((0, 0, 0))
+                    display.blit(image, (0, 0))
+                    running = False
+                    return True
                 else:
                     if g == 1:
                         CONTROLS['g'] = event.key
@@ -865,11 +911,11 @@ def Control():
                         CONTROLS['s'] = event.key
                         L_downb = font.render(f"{ke(CONTROLS['s'])}", True, (255, 229, 180))
                     elif a == 1:
-                        CONTROLS['a'] = event.key
-                        L_rightb = font.render(f"{ke(CONTROLS['a'])}", True, (255, 229, 180))
-                    elif d == 1:
                         CONTROLS['d'] = event.key
-                        L_leftb = font.render(f"{ke(CONTROLS['d'])}", True, (255, 229, 180))
+                        L_rightb = font.render(f"{ke(CONTROLS['d'])}", True, (255, 229, 180))
+                    elif d == 1:
+                        CONTROLS['a'] = event.key
+                        L_leftb = font.render(f"{ke(CONTROLS['a'])}", True, (255, 229, 180))
                     elif up == 1:
                         CONTROLS['up'] = event.key
                         L_upr = font.render(f"{ke(CONTROLS['up'])}", True, (255, 229, 180))
@@ -974,7 +1020,85 @@ def Control():
         pygame.display.update()
 
 
-# пауза
+# окончание игры, здесь окошко с конечным счетом или надписью имени победителя
+# запускается при срабатывании GAMEENDEVENT в основном цикле
+def end(display, bar, field, winner):
+    clock = pygame.time.Clock()
+    background = pygame.Surface((550, 300))
+    background.fill((255, 229, 180))
+    time_delta = clock.tick(FPS) / 1000.0
+    manager = pygame_gui.UIManager((W, H), f"{DATA_DIR}/{SETTINGS_FILES}/set.json")
+    font = pygame.font.Font(None, 46)
+    scoreb0 = font.render(winner[0].split()[0].rjust(7, ' '), True, (0, 191, 255))
+    scoreb1 = font.render(winner[0].split()[1], True, (0, 191, 255))
+    scoreb2 = font.render(winner[0].split()[2], True, (0, 191, 255))
+    scorer0 = font.render(winner[1].split()[0].rjust(7, ' '), True, (220, 20, 60))
+    scorer1 = font.render(winner[1].split()[1], True, (220, 20, 60))
+    scorer2 = font.render(winner[1].split()[2], True, (220, 20, 60))
+    font1 = pygame.font.Font(None, 60)
+    if winner[2] == 'Выиграл Голубой':
+        color = (0, 191, 255)
+    elif winner[2] == 'Выиграл Красный':
+        color = (220, 20, 60)
+    if len(winner[2].split()) == 2:
+        win0 = font1.render(winner[2].split()[0], True, color)
+        win1 = font1.render(winner[2].split()[1], True, color)
+    else:
+        win0 = font1.render(winner[2].split()[0], True, (192, 192, 192))
+        win1 = False
+    resume_game = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((W // 2 - 250, H // 2 + 50), (200, 50)),
+                                               text='Реванш', manager=manager)
+    exit_button = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((W // 2 + 50, H // 2 + 50), (200, 50)),
+                                               text='Завершить игру', manager=manager)
+    running = True
+    pygame.mouse.set_pos(W // 2 - 160, H // 2 - 90)
+    while running:
+        if pygame.mouse.get_pos()[0] in range(W // 2 - 275, W // 2 + 275)\
+                and pygame.mouse.get_pos()[1] in range(H // 2 - 150, H // 2 + 150):
+            cursor.rect.x, cursor.rect.y = pygame.mouse.get_pos()
+            cursor.rect.x -= 11
+            cursor.rect.y -= 11
+        for event in pygame.event.get():
+            if event.type == pygame.USEREVENT:
+                if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
+                    if event.ui_element == resume_game:
+                        running = False
+                        return True
+                    elif event.ui_element == exit_button:
+                        running = False
+                        return False
+            manager.process_events(event)
+        if pygame.mouse.get_pos()[0] < W // 2 - 275:
+            pygame.mouse.set_pos(W // 2 - 275, pygame.mouse.get_pos()[1])
+        if pygame.mouse.get_pos()[0] > W // 2 + 275:
+            pygame.mouse.set_pos(W // 2 + 275, pygame.mouse.get_pos()[1])
+        if pygame.mouse.get_pos()[1] < H // 2 - 150:
+            pygame.mouse.set_pos(pygame.mouse.get_pos()[0], H // 2 - 150)
+        if pygame.mouse.get_pos()[1] > H // 2 + 150:
+            pygame.mouse.set_pos(pygame.mouse.get_pos()[0], H // 2 + 150)
+        display.fill((0, 0, 0))
+        map_objects.draw(display)
+        field.render(display)
+        all_sprites.update()
+        all_sprites.draw(display)
+        display.blit(bar, (0, 0))
+        display.blit(background, (W // 2 - 275, H // 2 - 170))
+        display.blit(scoreb0, (W // 2 - 250, H // 2 - 140))
+        display.blit(scoreb1, (W // 2 - 245, H // 2 - 100))
+        display.blit(scoreb2, (W // 2 - 185, H // 2 - 60))
+        display.blit(scorer0, (W // 2 + 100, H // 2 - 140))
+        display.blit(scorer1, (W // 2 + 105, H // 2 - 100))
+        display.blit(scorer2, (W // 2 + 165, H // 2 - 60))
+        display.blit(win0, (W // 2 - 100, H // 2 - 50))
+        if win1 is not False:
+            display.blit(win1, (W // 2 - 100, H // 2))
+        manager.draw_ui(display)
+        manager.update(time_delta)
+        sprites.draw(display)
+        pygame.display.update()
+
+
+# пауза во время игры, в которой можно изменить настройки и выйти в меню
 def paused(display, bar, field):
     clock = pygame.time.Clock()
     background = pygame.Surface((320, 180))
@@ -996,7 +1120,11 @@ def paused(display, bar, field):
             cursor.rect.x -= 11
             cursor.rect.y -= 11
         for event in pygame.event.get():
-            if event.type == pygame.USEREVENT:
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    running = False
+                    return True
+            elif event.type == pygame.USEREVENT:
                 if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
                     if event.ui_element == resume_game:
                         running = False
@@ -1036,13 +1164,6 @@ def paused(display, bar, field):
         manager.update(time_delta)
         sprites.draw(display)
         pygame.display.update()
-
-
-# окончание игры, здесь окошко с конечным счетом или надписью имени победителя
-# запускается при срабатывании GAMEENDEVENT в основном цикле
-
-def end():
-    pass
 
 
 # функция заставки
