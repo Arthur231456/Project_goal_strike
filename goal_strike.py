@@ -46,6 +46,8 @@ with open(f"{DATA_DIR}/{SETTINGS_FILES}/volumes.info") as t:
     a = list(map(lambda x: x.rstrip("\n"), t.readlines()))
     for i in a:
         VOLUMES[i.split(" = ")[0]] = float(i.split(" = ")[1])
+
+# загрузка управления
 CONTROLS = {'g': 103,
            'p': 112,
            'r': 114,
@@ -58,7 +60,6 @@ CONTROLS = {'g': 103,
            'down': 1073741905,
            'right': 1073741903,
            'left': 1073741904}
-
 with open(f"{DATA_DIR}/{SETTINGS_FILES}/controls.info") as t:
     a = list(map(lambda x: x.rstrip("\n"), t.readlines()))
     for i in a:
@@ -478,6 +479,7 @@ def main(map):
         clock.tick(FPS)
 
 
+# функция определения победителя и вызова функции конца
 def win(display, bar, field, b, r, map):
     if map == 2:
         if b == r:
@@ -506,7 +508,8 @@ def win(display, bar, field, b, r, map):
         pygame.register_quit(start_menu())
 
 
-class Top_bar(pygame.Surface):  # класс верхней информационной панели
+# класс верхней информационной панели
+class Top_bar(pygame.Surface):
     def __init__(self, *size):
         super().__init__(*size)
         self.fill((255, 229, 180))
@@ -572,7 +575,8 @@ class Top_bar(pygame.Surface):  # класс верхней информацио
             self.health.append(player[i])
 
 
-class CapturePoints(pygame.sprite.Sprite):  # класс точек захвата
+# класс точек захвата
+class CapturePoints(pygame.sprite.Sprite):
     img = load_image(f"{DATA_DIR}/{PATTERNS_DIR}/free_place.jpg")
     red = load_image(f"{DATA_DIR}/{PATTERNS_DIR}/place2.jpg")
     blue = load_image(f"{DATA_DIR}/{PATTERNS_DIR}/place1.jpg")
@@ -593,7 +597,7 @@ class CapturePoints(pygame.sprite.Sprite):  # класс точек захват
         self.image = eval(f"CapturePoints.{player.color}")
 
 
-# начальный экран
+# меню
 def start_menu():
     pygame.init()
     display = pygame.display.set_mode((W, H), pygame.FULLSCREEN | pygame.DOUBLEBUF)
@@ -642,6 +646,7 @@ def start_menu():
         pygame.display.update()
 
 
+# функция настроек
 def settings():
     pygame.init()
     display = pygame.display.set_mode((W, H), pygame.FULLSCREEN | pygame.DOUBLEBUF)
@@ -666,7 +671,10 @@ def settings():
                 terminate()
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
-                    pass
+                    display.fill((0, 0, 0))
+                    display.blit(image, (0, 0))
+                    running = False
+                    return True
             elif event.type == pygame.USEREVENT:
                 if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
                     if event.ui_element == come_back:
@@ -687,6 +695,7 @@ def settings():
         pygame.display.update()
 
 
+# функция настройки звука
 def Volume():
     global VOLUMES
     pygame.init()
@@ -733,7 +742,10 @@ def Volume():
                 terminate()
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
-                    pass
+                    display.fill((0, 0, 0))
+                    display.blit(image, (0, 0))
+                    running = False
+                    return True
             elif event.type == pygame.USEREVENT:
                 if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
                     if event.ui_element == come_back:
@@ -778,6 +790,7 @@ def Volume():
         pygame.display.update()
 
 
+# функция определения кнопки по её коду
 def ke(q):
     if q == 1073741906:
         return 'up'
@@ -791,6 +804,7 @@ def ke(q):
         return chr(q)
 
 
+# окно настройки управления
 def Control():
     global CONTROLS
     pygame.init()
@@ -842,7 +856,7 @@ def Control():
                                             text="", manager=manager)
     down = 0
     text_rightb = font.render(f"Вправо г", True, (255, 229, 180))
-    L_rightb = font.render(f"{ke(CONTROLS['a'])}", True, (255, 229, 180))
+    L_rightb = font.render(f"{ke(CONTROLS['d'])}", True, (255, 229, 180))
     rightb = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((750, 610), (50, 50)),
                                             text="", manager=manager)
     a = 0
@@ -852,7 +866,7 @@ def Control():
                                             text="", manager=manager)
     right = 0
     text_leftb = font.render(f"Влево г", True, (255, 229, 180))
-    L_leftb = font.render(f"{ke(CONTROLS['d'])}", True, (255, 229, 180))
+    L_leftb = font.render(f"{ke(CONTROLS['a'])}", True, (255, 229, 180))
     leftb = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((750, 670), (50, 50)),
                                             text="", manager=manager)
     d = 0
@@ -873,7 +887,10 @@ def Control():
                 terminate()
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
-                    pass
+                    display.fill((0, 0, 0))
+                    display.blit(image, (0, 0))
+                    running = False
+                    return True
                 else:
                     if g == 1:
                         CONTROLS['g'] = event.key
@@ -894,11 +911,11 @@ def Control():
                         CONTROLS['s'] = event.key
                         L_downb = font.render(f"{ke(CONTROLS['s'])}", True, (255, 229, 180))
                     elif a == 1:
-                        CONTROLS['a'] = event.key
-                        L_rightb = font.render(f"{ke(CONTROLS['a'])}", True, (255, 229, 180))
-                    elif d == 1:
                         CONTROLS['d'] = event.key
-                        L_leftb = font.render(f"{ke(CONTROLS['d'])}", True, (255, 229, 180))
+                        L_rightb = font.render(f"{ke(CONTROLS['d'])}", True, (255, 229, 180))
+                    elif d == 1:
+                        CONTROLS['a'] = event.key
+                        L_leftb = font.render(f"{ke(CONTROLS['a'])}", True, (255, 229, 180))
                     elif up == 1:
                         CONTROLS['up'] = event.key
                         L_upr = font.render(f"{ke(CONTROLS['up'])}", True, (255, 229, 180))
@@ -1003,30 +1020,31 @@ def Control():
         pygame.display.update()
 
 
-# пауза
-def end(display, bar, field, winer):
+# окончание игры, здесь окошко с конечным счетом или надписью имени победителя
+# запускается при срабатывании GAMEENDEVENT в основном цикле
+def end(display, bar, field, winner):
     clock = pygame.time.Clock()
     background = pygame.Surface((550, 300))
     background.fill((255, 229, 180))
     time_delta = clock.tick(FPS) / 1000.0
     manager = pygame_gui.UIManager((W, H), f"{DATA_DIR}/{SETTINGS_FILES}/set.json")
     font = pygame.font.Font(None, 46)
-    scoreb0 = font.render(winer[0].split()[0].rjust(7, ' '), True, (0, 191, 255))
-    scoreb1 = font.render(winer[0].split()[1], True, (0, 191, 255))
-    scoreb2 = font.render(winer[0].split()[2], True, (0, 191, 255))
-    scorer0 = font.render(winer[1].split()[0].rjust(7, ' '), True, (220, 20, 60))
-    scorer1 = font.render(winer[1].split()[1], True, (220, 20, 60))
-    scorer2 = font.render(winer[1].split()[2], True, (220, 20, 60))
+    scoreb0 = font.render(winner[0].split()[0].rjust(7, ' '), True, (0, 191, 255))
+    scoreb1 = font.render(winner[0].split()[1], True, (0, 191, 255))
+    scoreb2 = font.render(winner[0].split()[2], True, (0, 191, 255))
+    scorer0 = font.render(winner[1].split()[0].rjust(7, ' '), True, (220, 20, 60))
+    scorer1 = font.render(winner[1].split()[1], True, (220, 20, 60))
+    scorer2 = font.render(winner[1].split()[2], True, (220, 20, 60))
     font1 = pygame.font.Font(None, 60)
-    if winer[2] == 'Выиграл Голубой':
+    if winner[2] == 'Выиграл Голубой':
         color = (0, 191, 255)
-    elif winer[2] == 'Выиграл Красный':
+    elif winner[2] == 'Выиграл Красный':
         color = (220, 20, 60)
-    if len(winer[2].split()) == 2:
-        win0 = font1.render(winer[2].split()[0], True, color)
-        win1 = font1.render(winer[2].split()[1], True, color)
+    if len(winner[2].split()) == 2:
+        win0 = font1.render(winner[2].split()[0], True, color)
+        win1 = font1.render(winner[2].split()[1], True, color)
     else:
-        win0 = font1.render(winer[2].split()[0], True, (192, 192, 192))
+        win0 = font1.render(winner[2].split()[0], True, (192, 192, 192))
         win1 = False
     resume_game = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((W // 2 - 250, H // 2 + 50), (200, 50)),
                                                text='Реванш', manager=manager)
@@ -1080,9 +1098,7 @@ def end(display, bar, field, winer):
         pygame.display.update()
 
 
-# окончание игры, здесь окошко с конечным счетом или надписью имени победителя
-# запускается при срабатывании GAMEENDEVENT в основном цикле
-
+# пауза во время игры, в которой можно изменить настройки и выйти в меню
 def paused(display, bar, field):
     clock = pygame.time.Clock()
     background = pygame.Surface((320, 180))
@@ -1104,7 +1120,11 @@ def paused(display, bar, field):
             cursor.rect.x -= 11
             cursor.rect.y -= 11
         for event in pygame.event.get():
-            if event.type == pygame.USEREVENT:
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    running = False
+                    return True
+            elif event.type == pygame.USEREVENT:
                 if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
                     if event.ui_element == resume_game:
                         running = False
