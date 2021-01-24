@@ -754,9 +754,9 @@ def ke(q):
         return 'up'
     elif q == 1073741905:
         return 'down'
-    elif q == 1073741904:
-        return 'right'
     elif q == 1073741903:
+        return 'right'
+    elif q == 1073741904:
         return 'left'
     else:
         return chr(q)
@@ -847,6 +847,7 @@ def Control():
                     pass
                 else:
                     if g == 1:
+                        print(event.key)
                         CONTROLS['g'] = event.key
                         L_shotb = font.render(f"{ke(CONTROLS['g'])}", True, (255, 229, 180))
                     elif p == 1:
