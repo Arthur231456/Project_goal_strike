@@ -49,17 +49,17 @@ with open(f"{DATA_DIR}/{SETTINGS_FILES}/volumes.info") as t:
 
 # загрузка управления
 CONTROLS = {'g': 103,
-           'p': 112,
-           'r': 114,
-           'l': 108,
-           'w': 119,
-           's': 115,
-           'a': 97,
-           'd': 100,
-           'up': 1073741906,
-           'down': 1073741905,
-           'right': 1073741903,
-           'left': 1073741904}
+            'p': 112,
+            'r': 114,
+            'l': 108,
+            'w': 119,
+            's': 115,
+            'a': 97,
+            'd': 100,
+            'up': 1073741906,
+            'down': 1073741905,
+            'right': 1073741903,
+            'left': 1073741904}
 with open(f"{DATA_DIR}/{SETTINGS_FILES}/controls.info") as t:
     a = list(map(lambda x: x.rstrip("\n"), t.readlines()))
     for i in a:
@@ -829,52 +829,52 @@ def Control():
     text_cdb = font.render(f"Перезарядка с", True, (255, 229, 180))
     L_cdb = font.render(f"{ke(CONTROLS['r'])}", True, (255, 229, 180))
     cdb = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((750, 430), (50, 50)),
-                                          text="", manager=manager)
+                                       text="", manager=manager)
     r = 0
     text_cdr = font.render(f"Перезарядка к", True, (255, 229, 180))
     L_cdr = font.render(f"{ke(CONTROLS['l'])}", True, (255, 229, 180))
     cdr = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((1250, 430), (50, 50)),
-                                          text="", manager=manager)
+                                       text="", manager=manager)
     l = 0
     text_upb = font.render(f"Вперёд с", True, (255, 229, 180))
     L_upb = font.render(f"{ke(CONTROLS['w'])}", True, (255, 229, 180))
     upb = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((750, 490), (50, 50)),
-                                            text="", manager=manager)
+                                       text="", manager=manager)
     w = 0
     text_upr = font.render(f"Вперёд к", True, (255, 229, 180))
     L_upr = font.render(f"{ke(CONTROLS['up'])}", True, (255, 229, 180))
     upr = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((1250, 490), (50, 50)),
-                                            text="", manager=manager)
+                                       text="", manager=manager)
     up = 0
     text_downb = font.render(f"Назад с", True, (255, 229, 180))
     L_downb = font.render(f"{ke(CONTROLS['s'])}", True, (255, 229, 180))
     downb = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((750, 550), (50, 50)),
-                                            text="", manager=manager)
+                                         text="", manager=manager)
     s = 0
     text_downr = font.render(f"Назад к", True, (255, 229, 180))
     L_downr = font.render(f"{ke(CONTROLS['down'])}", True, (255, 229, 180))
     downr = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((1250, 550), (50, 50)),
-                                            text="", manager=manager)
+                                         text="", manager=manager)
     down = 0
     text_rightb = font.render(f"Вправо с", True, (255, 229, 180))
     L_rightb = font.render(f"{ke(CONTROLS['d'])}", True, (255, 229, 180))
     rightb = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((750, 610), (50, 50)),
-                                            text="", manager=manager)
+                                          text="", manager=manager)
     a = 0
     text_rightr = font.render(f"Вправо к", True, (255, 229, 180))
     L_rightr = font.render(f"{ke(CONTROLS['right'])}", True, (255, 229, 180))
     rightr = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((1250, 610), (50, 50)),
-                                            text="", manager=manager)
+                                          text="", manager=manager)
     right = 0
     text_leftb = font.render(f"Влево с", True, (255, 229, 180))
     L_leftb = font.render(f"{ke(CONTROLS['a'])}", True, (255, 229, 180))
     leftb = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((750, 670), (50, 50)),
-                                            text="", manager=manager)
+                                         text="", manager=manager)
     d = 0
     text_leftr = font.render(f"Влево к", True, (255, 229, 180))
     L_leftr = font.render(f"{ke(CONTROLS['left'])}", True, (255, 229, 180))
     leftr = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((1250, 670), (50, 50)),
-                                            text="", manager=manager)
+                                         text="", manager=manager)
     left = 0
     bb = [shotb, cdb, upb, downb, rightb, leftb]
     rb = [shotr, cdr, upr, downr, rightr, leftr]
