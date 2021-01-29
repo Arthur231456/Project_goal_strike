@@ -479,7 +479,7 @@ def main(map):
         clock.tick(FPS)
 
 
-# функция определения победителя и вызова функции конца
+# функция определения победителя и вызов функции end
 def win(display, bar, field, b, r, map):
     if map == 2:
         if b == r:
@@ -931,9 +931,9 @@ def Control():
                     elif left == 1:
                         CONTROLS['left'] = event.key
                         L_leftr = font.render(f"{ke(CONTROLS['left'])}", True, (255, 229, 180))
-                    with open(f"{DATA_DIR}/{SETTINGS_FILES}/controls.info", "w") as r:
+                    with open(f"{DATA_DIR}/{SETTINGS_FILES}/controls.info", "w") as h:
                         for con in CONTROLS:
-                            r.write(f"{con} = {CONTROLS[con]}\n")
+                            h.write(f"{con} = {CONTROLS[con]}\n")
             elif event.type == pygame.USEREVENT:
                 if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
                     if event.ui_element == come_back:
@@ -1029,7 +1029,6 @@ def Control():
 
 # окончание игры, здесь окошко с конечным счетом или надписью имени победителя
 # запускается при срабатывании GAMEENDEVENT в основном цикле
-
 def end(display, bar, field, winner):
     clock = pygame.time.Clock()
     background = pygame.Surface((540, 300))
